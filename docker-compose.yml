@@ -1,40 +1,51 @@
 version: '3.8'
 
 services:
-    dev:
-        container_name: expirest_api_dev
-        image: expirest-api-dev:1.0.0
-        build:
-            context: .
-            target: development
-            dockerfile: ./Dockerfile
-        command: npm run start:debug
-        ports:
-            - 3000:3000
-            - 9229:9229
-        networks:
-            - expirest-network
-        volumes:
-            - .:/usr/src/app
-            - /usr/src/app/node_modules
-        restart: unless-stopped
-    prod:
-        container_name: expirest_api_prod
-        image: expirest-api-prod:1.0.0
-        build:
-            context: .
-            target: production
-            dockerfile: ./Dockerfile
-        command: npm run start:prod
-        ports:
-            - 3000:3000
-            - 9229:9229
-        networks:
-            - expirest-network
-        volumes:
-            - .:/usr/src/app
-            - /usr/src/app/node_modules
-        restart: unless-stopped
+  mongo:
+    image: mongo
+    volumes:
+      - mongodb:/data/db
+    networks:
+      - expirest-network
+  dev:
+    container_name: expirest_api_dev
+    image: expirest-api-dev:1.0.0
+    build:
+      context: .
+      target: development
+      dockerfile: ./Dockerfile
+    command: npm run start:debug
+    ports:
+      - 3000:3000
+    depends_on:
+      - mongo
+    networks:
+      - expirest-network
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    restart: unless-stopped
+  prod:
+    container_name: expirest_api_prod
+    image: expirest-api-prod:1.0.0
+    build:
+      context: .
+      target: production
+      dockerfile: ./Dockerfile
+    command: npm run start
+    ports:
+      - 3000:3000
+    depends_on:
+      - mongo
+    networks:
+      - expirest-network
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    restart: unless-stopped
+
+volumes:
+  mongodb:
 
 networks:
-    expirest-network:
+  expirest-network:
