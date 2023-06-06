@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ConfigService } from '../config/configService/config.service';
+import { ConfigService } from '../config/services/config.service';
 
 const config = new ConfigService(`.env.${process.env.NODE_ENV}`);
 @Module({
