@@ -1,3 +1,3 @@
-export interface ICrudController<T> {
+export interface ICrudController<T = any> {
     create(dto: T): Promise<any>
 }
