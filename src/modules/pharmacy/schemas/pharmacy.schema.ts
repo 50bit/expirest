@@ -12,10 +12,14 @@ const PharmacySchema: mongoose.Schema = new mongoose.Schema(
             match: /^01[0125][0-9]{8}$/gm
         },
         governorateId: {
-            type: String
+            type: ObjectId,
+            ref: 'governorates',
+            autopopulate:true
         },
         cityId: {
-            type: String
+            type: ObjectId,
+            ref: 'cities',
+            autopopulate:true
         },
         address: {
             type: String

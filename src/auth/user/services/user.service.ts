@@ -1,7 +1,7 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { AuthService } from '../services/auth.service';
+import { AuthService } from '../../services/auth.service';
 import { CrudService } from 'src/common/crud/services/crud.service';
 
 @Injectable()
@@ -11,19 +11,6 @@ export class UserService extends CrudService {
     @InjectModel('users') public readonly model: Model<any>,
   ) {
     super(model);
-    // this.model.findOne({ isSysAdmin: true }).then(user => {
-    //   if (!user) {
-    //     const userObject = {
-    //       email: 'SysAdmin@mail.com',
-    //       phoneNumber: '010000000000',
-    //       fullName: 'SysAdmin',
-    //       password: 'Expirest@SysAdmin',
-    //       isSysAdmin: true,
-    //       address: '',
-    //     };
-    //     this.model.create(userObject);
-    //   }
-    // });
   }
 
   async changePassword(userObject: any, body: any) {

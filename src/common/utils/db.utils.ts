@@ -2,7 +2,7 @@ import * as mongoose from 'mongoose';
 import mongooseAutopopulate from 'mongoose-autopopulate';
 import * as bcrypt from 'bcryptjs';
 import { Schema } from 'mongoose';
-import { UserSchema } from '../../auth/user/user.schema';
+
 
 export const ObjectIdType = mongoose.Types.ObjectId;
 
@@ -13,8 +13,8 @@ export const loadPlugins = (schema: any) => {
   return schema;
 };
 
-export const onUserUpdate = (UserSchema: Schema) => {
-  UserSchema.pre<any>('updateOne', function(next) {
+export const onUserUpdate = (schema: Schema) => {
+  schema.pre<any>('updateOne', function(next) {
     if (this._update.$set && this._update.$set.password) {
       bcrypt.genSalt(10, (err, salt) => {
         if (err) {
@@ -45,11 +45,11 @@ export const onUserUpdate = (UserSchema: Schema) => {
       next();
     }
   });
-  UserSchema.methods.isPasswordMatch = bcrypt.compareSync;
+  schema.methods.isPasswordMatch = bcrypt.compareSync;
 };
 
-export const onUserSave = (UserSchema: Schema) => {
-  UserSchema.pre<any>('save', function(next) {
+export const onUserSave = (schema: Schema) => {
+  schema.pre<any>('save', function(next) {
     bcrypt.genSalt(10, (err, salt) => {
       if (err) {
         return next(err);
@@ -64,7 +64,7 @@ export const onUserSave = (UserSchema: Schema) => {
     });
   });
 
-  UserSchema.pre<any>('updateOne', function(next) {
+  schema.pre<any>('updateOne', function(next) {
     if (this._update.$set && this._update.$set.password) {
       bcrypt.genSalt(10, (err, salt) => {
         if (err) {
@@ -95,5 +95,5 @@ export const onUserSave = (UserSchema: Schema) => {
       next();
     }
   });
-  UserSchema.methods.isPasswordMatch = bcrypt.compareSync;
+  schema.methods.isPasswordMatch = bcrypt.compareSync;
 };

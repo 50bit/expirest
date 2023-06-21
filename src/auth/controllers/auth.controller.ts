@@ -1,5 +1,5 @@
 import { Controller, Body, Post, HttpStatus, HttpCode, UseGuards, HttpException,Request, UseInterceptors, UploadedFiles, Get, UploadedFile } from '@nestjs/common';
-import { ApiCreatedResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCreatedResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 
 import { AuthService } from '../services/auth.service';
@@ -15,16 +15,14 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('authorize')
+  @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
-  @ApiCreatedResponse({
-    type: Auth,
-  })
   @HttpCode(HttpStatus.OK)
-  async authorize(@Request() req:any, @Body() body: String[]) {
-    if (req.user ) {
+  async authorize(@Request() req:any) {
+    if (req.user) {
       return { status: 200, message: 'Authorized' };
     } else {
-      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+      return new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
     }
   }
 

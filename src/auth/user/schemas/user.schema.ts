@@ -3,7 +3,7 @@ import {
   loadPlugins,
   onUserSave,
   onUserUpdate,
-} from '../../common/utils/db.utils';
+} from '../../../common/utils/db.utils';
 import * as mongoose from 'mongoose';
 
 const UserSchema = new mongoose.Schema(
