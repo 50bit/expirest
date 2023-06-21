@@ -29,9 +29,9 @@ export class AppModule {
   }
 
   // DOC: https://docs.nestjs.com/middleware
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(loggerMiddleware)
-      .forRoutes({ path: '/', method: RequestMethod.ALL });
-  }
+  // configure(consumer: MiddlewareConsumer) {
+  //   consumer
+  //     .apply(loggerMiddleware)
+  //     .forRoutes({ path: '/', method: RequestMethod.ALL });
+  // }
 }
