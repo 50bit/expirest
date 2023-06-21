@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { Catch, Logger, ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 
 import { setupSwagger } from './swagger';
@@ -9,14 +9,26 @@ import { loggerMiddleware } from './common/middlewares/logger.middleware';
 declare const module: any;
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { cors: true });
+  const app = await NestFactory.create(AppModule, {
+    cors: true,
+  });
   const logger = new Logger('Main');
   const globalPrefix = '/api';
-  
+
   app.useGlobalPipes(new ValidationPipe());
   app.setGlobalPrefix(globalPrefix);
   app.use(helmet());
   app.use(loggerMiddleware);
+
+  @Catch(Error)
+  class Handler {
+    catch(e: any, res: any) {
+      console.log(e)
+      logger.error(e);
+    }
+  }
+
+  app.useGlobalFilters(new Handler());
 
   setupSwagger(app);
 

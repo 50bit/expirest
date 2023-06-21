@@ -1,27 +1,18 @@
-import { Controller, Body, Post, HttpStatus, HttpCode, UseGuards, HttpException,Request, UseInterceptors, UploadedFiles, Get } from '@nestjs/common';
+import { Controller, Body, Post, HttpStatus, HttpCode, UseGuards, HttpException,Request, UseInterceptors, UploadedFiles, Get, UploadedFile } from '@nestjs/common';
 import { ApiCreatedResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 
 import { AuthService } from '../services/auth.service';
 import { Auth } from '../interfaces/auth.dto';
-import { AdminRegister } from '../interfaces/adminRegister.interface';
 import { AdminRegisterDTO } from '../interfaces/adminRegister.dto';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
+import { Register } from '../interfaces/register.interface';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
-
-  @Post('login')
-  @ApiCreatedResponse({
-    type: Auth,
-  })
-  @HttpCode(HttpStatus.OK)
-  async login(@Body() body: Auth) {
-    return await this.authService.login(body);
-  }
 
   @Post('authorize')
   @UseGuards(AuthGuard('jwt'))
@@ -37,22 +28,13 @@ export class AuthController {
     }
   }
 
-  @Post('authenticationLogin')
+  @Post('login')
   @ApiCreatedResponse({
     type: Auth,
   })
   @HttpCode(HttpStatus.OK)
-  async authenticationLogin(@Body() body: Auth) {
-    return await this.authService.authenticationLogin(body);
-  }
-
-  @Post('authorizationLogin')
-  @ApiCreatedResponse({
-    type: Auth,
-  })
-  @HttpCode(HttpStatus.OK)
-  async authorizationLogin(@Body() body: Auth) {
-    return await this.authService.authorizationLogin(body);
+  async login(@Body() body: Auth) {
+    return await this.authService.login(body);
   }
 
   @Post('register')
@@ -60,7 +42,7 @@ export class AuthController {
     type: Auth,
   })
   @HttpCode(HttpStatus.OK)
-  async register(@Body() body: any) {
+  async register(@Body() body: Register) {
     return await this.authService.register(body);
   }
 
@@ -70,7 +52,10 @@ export class AuthController {
   })
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(
-    FilesInterceptor('files', 10, {
+    FileFieldsInterceptor([
+      { name: 'pharmacyLiscence', maxCount: 1 },
+      { name: 'pharmacistId', maxCount: 1 },
+    ],{
       dest: './uploads',
       storage: diskStorage({
         destination: function (req, file, cb) {
@@ -79,8 +64,10 @@ export class AuthController {
         filename: function (req, file, cb) {
           cb(
             null,
-            Date.now() +
             'expirest' +
+            '-' +
+            file.originalname +
+            '-' +
             Date.now() +
             '.' +
             file.mimetype.split('/')[1],
@@ -89,13 +76,11 @@ export class AuthController {
       }),
     }),
   )
-  async create(@UploadedFiles() files: any, @Body() body: AdminRegister) {
+  async create(@UploadedFiles() files: { pharmacyLiscence?: Express.Multer.File, pharmacistId?: Express.Multer.File}, @Body() body: AdminRegisterDTO) {
     let filesMap = {
-      files: files.map((file: any) => {
-        return { src: file.filename };
-      }),
+      pharmacyLiscence:files.pharmacyLiscence[0].filename,
+      pharmacistId:files.pharmacistId[0].filename
     };
     return await this.authService.adminRegister(body,filesMap);
-
   }
 }

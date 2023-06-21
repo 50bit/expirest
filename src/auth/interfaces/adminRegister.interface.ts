@@ -1,25 +1,14 @@
 export interface AdminRegister {
-    pharmacy: Pharmacy;
-    user: User;
-    files:[]
-}
-
-
-interface Pharmacy {
-    name: string
-    phoneNumber: string,
+    pharmacyName: string
+    pharmacyPhoneNumber: string,
     governorateId: string,
     cityId: string,
     address: string,
-}
-
-
-
-interface User {
-    fullName: string,
+    userFullName: string,
     email: string,
-    phoneNumber: string,
+    userPhoneNumber: string,
     password: string,
     isAdmin: boolean,
     activatedByEmail: boolean
+    files:[]
 }

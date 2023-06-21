@@ -4,9 +4,9 @@ import { ApiProperty } from '@nestjs/swagger';
 export class Auth {
     @IsString()
     @ApiProperty()
-    phoneNumber!: string;
+    email: string
 
     @IsString()
     @ApiProperty()
-    password!: string;
+    password: string;
 }

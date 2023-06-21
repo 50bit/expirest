@@ -20,14 +20,19 @@ const PharmacySchema: mongoose.Schema = new mongoose.Schema(
         address: {
             type: String
         },
-        files: {
-            type: Array
+        pharmacyLiscence: {
+            type: String
+        },
+        pharmacistId: {
+            type: String
         }
     },
     {
         timestamps: true,
+        toObject: {virtuals:true}
     },
 );
 
 loadPlugins(PharmacySchema);
+
 export { PharmacySchema };

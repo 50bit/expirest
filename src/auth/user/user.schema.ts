@@ -1,4 +1,5 @@
 import {
+  ObjectId,
   loadPlugins,
   onUserSave,
   onUserUpdate,
@@ -28,13 +29,20 @@ const UserSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    pharmacyId:{
+      type: ObjectId,
+      ref: 'pharmacies',
+      autopopulate:true
+    }
   },
   {
-    timestamps: true,
+    timestamps: true
   },
 );
 
 loadPlugins(UserSchema);
 onUserSave(UserSchema);
 onUserUpdate(UserSchema);
+
+
 export { UserSchema };

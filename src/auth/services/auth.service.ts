@@ -3,8 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '../../common/config/services/config.service';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { AdminRegister } from '../interfaces/adminRegister.interface';
-import { cloneDeep } from 'lodash'
+import { Register } from '../interfaces/register.interface';
 @Injectable()
 export class AuthService {
     constructor(
@@ -21,56 +20,25 @@ export class AuthService {
         };
     }
 
-    async login(body: any) {
-        const user = await this.userModel.findOne({
-            phoneNumber: body.phoneNumber,
-        });
-        if (!user) {
-            throw new HttpException(
-                'Error, Account not found or has no access',
-                HttpStatus.METHOD_NOT_ALLOWED,
-            );
-        } else {
-            const isMatch = await user.isPasswordMatch(body.password, user.password);
-            // Invalid password
-            if (!isMatch) {
-                throw new HttpException(
-                    'Error, Invalid Password',
-                    HttpStatus.METHOD_NOT_ALLOWED,
-                );
-            } else {
-                return await {
-                    fullName: user.fullName,
-                    isSysAdmin: user.isSysAdmin,
-                    token: await this.generateToken({
-                        id: user._id,
-                        isSysAdmin: user.isSysAdmin,
-                        fullName: user.fullName,
-                    }),
-                };
-            }
-        }
-    }
-
     async authenticationLogin(body: any) {
         if (
-            body.phoneNumber === '010000000000' &&
+            body.email === 'admin@mail.com' &&
             body.password ===
-            `SallyPharma@${new Date().getFullYear()}@${new Date().getMonth() +
+            `Expirest@${new Date().getFullYear()}@${new Date().getMonth() +
             1}@${new Date().getDate()}`
         ) {
             return await {
                 fullName: 'Admin',
-                isSysAdmin: true,
+                isAdmin: true,
                 token: await this.generateToken({
                     id: '000000000000000000000000',
-                    isSysAdmin: true,
+                    isAdmin: true,
                     fullName: 'Admin',
                 }),
             };
         } else {
             const user = await this.userModel.findOne({
-                phoneNumber: body.phoneNumber,
+                email: body.email,
             });
             if (!user) {
                 throw new HttpException(
@@ -91,10 +59,10 @@ export class AuthService {
                 } else {
                     return await {
                         fullName: user.fullName,
-                        isSysAdmin: user.isSysAdmin,
+                        isAdmin: user.isAdmin,
                         token: await this.generateToken({
                             id: user._id,
-                            isSysAdmin: user.isSysAdmin,
+                            isAdmin: user.isAdmin,
                             fullName: user.fullName,
                         }),
                     };
@@ -103,10 +71,10 @@ export class AuthService {
         }
     }
 
-    async authorizationLogin(body: any) {
+    async login(body: any) {
         const user = await this.userModel.findOne({
-            phoneNumber: body.phoneNumber,
-        });
+            email: body.email,
+        }).select("password");
         if (!user) {
             throw new HttpException(
                 'Error, Account not found',
@@ -123,49 +91,56 @@ export class AuthService {
             } else {
                 return await {
                     fullName: user.fullName,
-                    isSysAdmin: user.isSysAdmin,
+                    isAdmin: user.isAdmin,
                     token: await this.generateToken({
                         id: user._id,
                         fullName: user.fullName,
-                        isSysAdmin: user.isSysAdmin,
+                        isAdmin: user.isAdmin,
                     }),
                 };
             }
         }
     }
 
-    async register(body: any) {
-        const user = await this.userModel.findOne({
-            phoneNumber: body.phonNumber,
-        });
-        if (user) {
+    async register(body: Register) {
+        let user = {
+            fullName: body.fullName,
+            email: body.email,
+            phoneNumber: body.phoneNumber,
+            password: body.password,
+            isAdmin: body.isAdmin,
+            pharmacyId: body.pharmacyId
+        }
+
+        const userExists = await this.userModel.findOne({ email: user.email });
+
+        if (userExists)
             throw new HttpException(
-                'Error, Phone Number is already in use',
+                'User already exists, please contact the administration',
                 HttpStatus.METHOD_NOT_ALLOWED,
             );
-        } else {
-            const userObject = {
-                email: body.email,
-                phoneNumber: body.phoneNumber,
-                fullName: body.fullName,
-                password: body.password,
-            };
-            const user = await this.userModel.create(userObject);
-            if (user._id) {
-                const userRoleObject = {
-                    fullName: body.fullName,
-                    phoneNumber: body.phoneNumber,
-                    address: body.address,
-                    userId: user._id,
-                };
-            }
-        }
+
+        await this.userModel.create(user)
+
+        return (await this.userModel.findOne({ email: user.email }));
     }
 
     async adminRegister(body: any, files: any) {
-        let { user, pharmacy } = body;
-        user = JSON.parse(user)
-        pharmacy = JSON.parse(pharmacy)
+        let user = {
+            fullName: body.userFullName,
+            email: body.email,
+            phoneNumber: body.userPhoneNumber,
+            password: body.password,
+            isAdmin: body.isAdmin || false,
+            activatedByEmail: false
+        }
+        let pharmacy = {
+            name: body.pharmacyName,
+            phoneNumber: body.pharmacyPhoneNumber,
+            governorateId: body.governorateId,
+            cityId: body.cityId,
+            address: body.address
+        }
         const pharmacyExists = await this.pharmacyModel.findOne({
             phoneNumber: pharmacy.phoneNumber,
             governorateId: pharmacy.governorateId,
@@ -173,18 +148,17 @@ export class AuthService {
             name: pharmacy.name
         });
         if (pharmacyExists)
-            throw new HttpException(
+            return new HttpException(
                 'Pharmacy already exists, please contact the administration',
                 HttpStatus.METHOD_NOT_ALLOWED,
             );
-            
+
         const userExists = await this.userModel.findOne({
-            phoneNumber: user.phoneNumber,
             email: user.email
         });
 
         if (userExists)
-            throw new HttpException(
+            return new HttpException(
                 'User already exists, please contact the administration',
                 HttpStatus.METHOD_NOT_ALLOWED,
             );
@@ -193,10 +167,10 @@ export class AuthService {
 
         let createdPharamcy = JSON.parse(JSON.stringify((await this.pharmacyModel.create(pharmacy))));
         user["pharmacyId"] = createdPharamcy._id;
-        user["isAdmin"] = true;
         let createdUser = JSON.parse(JSON.stringify((await this.userModel.create(user))));
         delete createdUser.password;
-        createdUser['pharmacyId'] = createdPharamcy;
-        return createdUser;
+        createdUser['pharmacy'] = createdPharamcy;
+        let finalUser = JSON.parse(JSON.stringify((await this.userModel.findOne({email:user.email})))); 
+        return finalUser;
     }
 }

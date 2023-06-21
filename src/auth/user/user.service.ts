@@ -11,19 +11,19 @@ export class UserService extends CrudService {
     @InjectModel('users') public readonly model: Model<any>,
   ) {
     super(model);
-    this.model.findOne({ isSysAdmin: true }).then(user => {
-      if (!user) {
-        const userObject = {
-          email: 'SysAdmin@mail.com',
-          phoneNumber: '010000000000',
-          fullName: 'SysAdmin',
-          password: 'SallyPharmacy@SysAdmin',
-          isSysAdmin: true,
-          address: '',
-        };
-        this.model.create(userObject);
-      }
-    });
+    // this.model.findOne({ isSysAdmin: true }).then(user => {
+    //   if (!user) {
+    //     const userObject = {
+    //       email: 'SysAdmin@mail.com',
+    //       phoneNumber: '010000000000',
+    //       fullName: 'SysAdmin',
+    //       password: 'Expirest@SysAdmin',
+    //       isSysAdmin: true,
+    //       address: '',
+    //     };
+    //     this.model.create(userObject);
+    //   }
+    // });
   }
 
   async changePassword(userObject: any, body: any) {

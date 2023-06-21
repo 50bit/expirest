@@ -2,18 +2,13 @@ import { IsBoolean, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class AdminRegisterDTO {
-    pharmacy: PharmacyDTO;
-    user: UserDTO;
-}
-
-class PharmacyDTO {
     @IsString()
     @ApiProperty()
-    name: string
+    pharmacyName: string
 
     @IsString()
     @ApiProperty()
-    phoneNumber: string
+    PharmacyPhoneNumber: string
 
     @IsString()
     @ApiProperty()
@@ -26,14 +21,10 @@ class PharmacyDTO {
     @IsString()
     @ApiProperty()
     address: string
-}
 
-
-
-class UserDTO {
     @IsString()
     @ApiProperty()
-    fullName: string
+    userFullName: string
 
     @IsString()
     @ApiProperty()
@@ -41,17 +32,23 @@ class UserDTO {
 
     @IsString()
     @ApiProperty()
-    phoneNumber: string
+    userPhoneNumber: string
 
     @IsString()
     @ApiProperty()
     password: string
 
-    @IsBoolean()
-    @ApiProperty({ required: false })
-    isAdmin: boolean
+    @ApiProperty({ 
+        type: 'string',
+        format: 'binary',
+        required: true 
+    })
+    pharmacyLiscence: Express.Multer.File
 
-    @IsBoolean()
-    @ApiProperty({ required: false })
-    activatedByEmail: boolean
+    @ApiProperty({ 
+        type: 'string',
+        format: 'binary',
+        required: true 
+    })
+    pharmacistId: Express.Multer.File
 }
