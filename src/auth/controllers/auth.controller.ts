@@ -43,7 +43,7 @@ export class AuthController {
   async register(@Body() body: Register) {
     return await this.authService.register(body);
   }
-
+  
   @Post('admin-register')
   @ApiCreatedResponse({
     type: AdminRegisterDTO,
@@ -53,26 +53,7 @@ export class AuthController {
     FileFieldsInterceptor([
       { name: 'pharmacyLiscence', maxCount: 1 },
       { name: 'pharmacistId', maxCount: 1 },
-    ],{
-      dest: './uploads',
-      storage: diskStorage({
-        destination: function (req, file, cb) {
-          cb(null, './uploads');
-        },
-        filename: function (req, file, cb) {
-          cb(
-            null,
-            'expirest' +
-            '-' +
-            file.originalname +
-            '-' +
-            Date.now() +
-            '.' +
-            file.mimetype.split('/')[1],
-          );
-        },
-      }),
-    }),
+    ])
   )
   async create(@UploadedFiles() files: { pharmacyLiscence?: Express.Multer.File, pharmacistId?: Express.Multer.File}, @Body() body: AdminRegisterDTO) {
     let filesMap = {
@@ -81,4 +62,42 @@ export class AuthController {
     };
     return await this.authService.adminRegister(body,filesMap);
   }
+
+  // @Post('admin-register')
+  // @ApiCreatedResponse({
+  //   type: AdminRegisterDTO,
+  // })
+  // @HttpCode(HttpStatus.OK)
+  // @UseInterceptors(
+  //   FileFieldsInterceptor([
+  //     { name: 'pharmacyLiscence', maxCount: 1 },
+  //     { name: 'pharmacistId', maxCount: 1 },
+  //   ],{
+  //     dest: './uploads',
+  //     storage: diskStorage({
+  //       destination: function (req, file, cb) {
+  //         cb(null, './uploads');
+  //       },
+  //       filename: function (req, file, cb) {
+  //         cb(
+  //           null,
+  //           'expirest' +
+  //           '-' +
+  //           file.originalname +
+  //           '-' +
+  //           Date.now() +
+  //           '.' +
+  //           file.mimetype.split('/')[1],
+  //         );
+  //       },
+  //     }),
+  //   }),
+  // )
+  // async create(@UploadedFiles() files: { pharmacyLiscence?: Express.Multer.File, pharmacistId?: Express.Multer.File}, @Body() body: AdminRegisterDTO) {
+  //   let filesMap = {
+  //     pharmacyLiscence:files.pharmacyLiscence[0].filename,
+  //     pharmacistId:files.pharmacistId[0].filename
+  //   };
+  //   return await this.authService.adminRegister(body,filesMap);
+  // }
 }
