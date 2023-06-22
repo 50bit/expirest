@@ -45,7 +45,10 @@ async function bootstrap() {
   if (baseUrl === '0.0.0.0' || baseUrl === '::') {
     baseUrl = 'localhost';
   }
+  console.log("baseUrl",baseUrl)
+
   const url = `http://${baseUrl}:${AppModule.port}${globalPrefix}`;
+  console.log("url",url)
   logger.log(`Listening to ${url}`);
   if (AppModule.isDev) {
     logger.log(`API Documentation available at ${url}/docs`);
