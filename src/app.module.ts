@@ -26,6 +26,7 @@ export class AppModule {
   constructor(@Inject('ConfigService') private readonly config) {
     AppModule.port = process.env.PORT || config.get('PORT');
     AppModule.isDev = process.env.NODE_ENV === "development" ? true : false;
+    console.log(config)
   }
 
   // DOC: https://docs.nestjs.com/middleware
