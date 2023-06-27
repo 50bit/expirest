@@ -11,6 +11,7 @@ import { AuthController } from './controllers/auth.controller';
 import { JwtStrategy } from './strategy/jwt.strategy';
 import { AuthService } from './services/auth.service';
 import { PharmacySchema } from 'src/modules/pharmacy/schemas/pharmacy.schema';
+import { MailUtils } from 'src/common/utils/mail.utils';
 
 @Module({
   imports: [
@@ -40,7 +41,8 @@ import { PharmacySchema } from 'src/modules/pharmacy/schemas/pharmacy.schema';
     {
       provide: 'ConfigService',
       useValue: new ConfigService(`.env.${process.env.NODE_ENV}`),
-    }
+    },
+    MailUtils
   ],
   exports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),

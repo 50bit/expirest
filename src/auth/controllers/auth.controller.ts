@@ -1,4 +1,4 @@
-import { Controller, Body, Post, HttpStatus, HttpCode, UseGuards, HttpException,Request, UseInterceptors, UploadedFiles, Get, UploadedFile } from '@nestjs/common';
+import { Controller, Body, Post, HttpStatus, HttpCode, UseGuards, HttpException,Request, UseInterceptors, UploadedFiles, Get, UploadedFile, Param, Res } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -61,6 +61,12 @@ export class AuthController {
       pharmacistId:files.pharmacistId[0].filename
     };
     return await this.authService.adminRegister(body,filesMap);
+  }
+
+  @Get('confirm/:token')
+  @HttpCode(HttpStatus.OK)
+  async confirm(@Param('token') token: string,@Res() res: Response) {
+    return await this.authService.confirm(token);
   }
 
   // @Post('admin-register')

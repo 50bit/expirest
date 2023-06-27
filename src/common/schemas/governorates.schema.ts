@@ -18,6 +18,13 @@ const GovernoratesSchema: mongoose.Schema = new mongoose.Schema(
         timestamps: true,
     },
 );
-
+export const aggregationPipelineConfig  = (lang) => ([
+    {
+        "langConfig": {
+            "langField": "governorate_name",
+            "lang": lang
+        }
+    }
+])
 loadPlugins(GovernoratesSchema);
 export { GovernoratesSchema };

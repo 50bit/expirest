@@ -11,15 +11,15 @@ const PharmacySchema: mongoose.Schema = new mongoose.Schema(
             type: String,
             match: /^01[0125][0-9]{8}$/gm
         },
-        governorateId: {
+        governorate_id: {
             type: ObjectId,
             ref: 'governorates',
-            autopopulate:true
+            autopopulate: true
         },
         cityId: {
             type: ObjectId,
             ref: 'cities',
-            autopopulate:true
+            autopopulate: true
         },
         address: {
             type: String
@@ -33,10 +33,37 @@ const PharmacySchema: mongoose.Schema = new mongoose.Schema(
     },
     {
         timestamps: true,
-        toObject: {virtuals:true}
+        toObject: { virtuals: true }
     },
 );
-
+export const aggregationPipelineConfig  = (lang) => ([
+    {
+        "ref": "cities",
+        "lookupField": "_id",
+        "foriegnField": "cityId",
+        "langConfig": {
+            "langField": "city_name",
+            "lang": lang
+        },
+        "innerLookup": {
+            "ref": "governorates",
+            "lookupField": "id",
+            "foriegnField": "governorate_id",
+            "langConfig": {
+                "langField": "governorate_name",
+                "lang": lang
+            }
+        }
+    },
+    {
+        "ref": "governorates",
+        "lookupField": "_id",
+        "foriegnField": "governorate_id",
+        "langConfig": {
+            "langField": "governorate_name",
+            "lang": lang
+        }
+    }
+])
 loadPlugins(PharmacySchema);
-
 export { PharmacySchema };

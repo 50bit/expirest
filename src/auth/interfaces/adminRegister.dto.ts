@@ -12,7 +12,7 @@ export class AdminRegisterDTO {
 
     @IsString()
     @ApiProperty()
-    governorateId: string
+    governorate_id: string
 
     @IsString()
     @ApiProperty()

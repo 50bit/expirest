@@ -1,21 +1,15 @@
 import {
   Controller,
-  Post,
-  Body,
-  Put,
-  Param,
   HttpStatus,
-  HttpException,
   Get,
-  UseGuards,
   Request,
-  Query,
   HttpCode,
   Headers,
 } from '@nestjs/common';
 import { GovernorateService } from '../services/governorate.service';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
+import { ApiTags } from '@nestjs/swagger';
+import { aggregationMan } from 'src/common/utils/aggregationMan.utils';
+import { aggregationPipelineConfig } from 'src/common/schemas/governorates.schema';
 
 @ApiTags('Governorates')
 @Controller('governorates')
@@ -25,8 +19,12 @@ export class GovernorateController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  async getGovernorates(@Request() req: any) {
-    return await this.governorateService.find({});
+  async getGovernorates(@Request() req: any, @Headers() headers) {
+    const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
+      ? headers['accept-language']
+      : 'multiLang');
+    const pipelineConfig = aggregationPipelineConfig(lang)
+    const pipeline = aggregationMan(pipelineConfig, {})
+    return await this.governorateService.aggregate(pipeline);
   }
-
 }

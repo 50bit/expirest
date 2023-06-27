@@ -7,10 +7,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 @Module({
     controllers: [GovernorateController],
     providers: [GovernorateService],
-    imports:[
+    imports: [
         MongooseModule.forFeature([
             { name: 'governorates', schema: GovernoratesSchema },
         ])
     ]
 })
-export class GovernorateModule {}
+export class GovernorateModule { }

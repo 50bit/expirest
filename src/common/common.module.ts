@@ -8,6 +8,7 @@ import { CitiesSchema } from './schemas/cities.schema';
 import GOVERNORATES from './constants/governorates.json';
 import CITIES from './constants/cities.json';
 import { Logger } from '@nestjs/common';
+import { aggregationMan } from './utils/aggregationMan.utils';
 const logger = new Logger('DB');
 
 @Module({
@@ -28,31 +29,31 @@ export class CommonModule {
   ) {
     const constsArray = [
       {
-        model:governorates,
-        data:GOVERNORATES,
-        label:"Governorates"
+        model: governorates,
+        data: GOVERNORATES,
+        label: "Governorates"
       },
       {
-        model:cities,
-        data:CITIES,
-        label:"Cities"
+        model: cities,
+        data: CITIES,
+        label: "Cities"
       }
     ]
 
     this.fillDB(constsArray)
-    
+    // console.log(JSON.stringify(aggregationMan(lookupConfig, {})))
   }
 
-  fillDB(constsArray){
-    for(const el of constsArray){
+  fillDB(constsArray) {
+    for (const el of constsArray) {
       const model = el.model
       const data = el.data
       const label = el.label || ''
-      model.find({}).count().then((count)=>{
-        if(count === 0){
+      model.find({}).count().then((count) => {
+        if (count === 0) {
           model.insertMany(data)
           logger.log(`${label} data inserted successfully`);
-        }else{
+        } else {
           logger.log(`${label} collection was already intiallized with ${count} records`);
         }
       })

@@ -4,6 +4,7 @@ import { ConfigService } from '../../common/config/services/config.service';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Register } from '../interfaces/register.interface';
+import { MailUtils } from 'src/common/utils/mail.utils';
 @Injectable()
 export class AuthService {
     constructor(
@@ -11,6 +12,7 @@ export class AuthService {
         @InjectModel('pharmacies') public readonly pharmacyModel: Model<any>,
         private readonly jwtService: JwtService,
         private readonly configService: ConfigService,
+        private readonly mailUtils: MailUtils
     ) { }
 
     async generateToken(user: any) {
@@ -137,13 +139,13 @@ export class AuthService {
         let pharmacy = {
             name: body.pharmacyName,
             phoneNumber: body.pharmacyPhoneNumber,
-            governorateId: body.governorateId,
+            governorate_id: body.governorate_id,
             cityId: body.cityId,
             address: body.address
         }
         const pharmacyExists = await this.pharmacyModel.findOne({
             phoneNumber: pharmacy.phoneNumber,
-            governorateId: pharmacy.governorateId,
+            governorate_id: pharmacy.governorate_id,
             cityId: pharmacy.cityId,
             name: pharmacy.name
         });
@@ -163,6 +165,16 @@ export class AuthService {
                 HttpStatus.METHOD_NOT_ALLOWED,
             );
 
+        try {
+            await this.mailUtils.sendConfirmationEmail(user.fullName,(await this.generateToken(user)).accessToken,user.email)
+        } catch (error) {
+            console.log(error)
+            return new HttpException(
+                'Email is not valid or can\'t be reached',
+                HttpStatus.METHOD_NOT_ALLOWED,
+            );
+        }
+
         pharmacy = { ...pharmacy, ...files };
 
         let createdPharamcy = JSON.parse(JSON.stringify((await this.pharmacyModel.create(pharmacy))));
@@ -172,5 +184,12 @@ export class AuthService {
         createdUser['pharmacy'] = createdPharamcy;
         let finalUser = JSON.parse(JSON.stringify((await this.userModel.findOne({email:user.email})))); 
         return finalUser;
+    }
+
+    async confirm(token){
+        const user = await this.jwtService.verify(token)
+        console.log(user)
+        await this.userModel.updateOne({"email":user.email,"phoneNumber":user.phoneNumber},{"$set":{"activatedByEmail":true}})
+        return "Confirmed"
     }
 }

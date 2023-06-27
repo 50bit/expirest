@@ -8,12 +8,6 @@ export class CrudService {
   }
 
   async aggregate(pipeline: any) {
-    const excludeUnActive: any = {
-      $match: {
-        isActive: { $ne: false },
-      },
-    };
-    pipeline.push(excludeUnActive);
     return await this.Model.aggregate(pipeline);
   }
   async findAllByLang(query: any, options: any, sortAttr?: any) {

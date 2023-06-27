@@ -1,7 +1,7 @@
 export interface AdminRegister {
     pharmacyName: string
     pharmacyPhoneNumber: string,
-    governorateId: string,
+    governorate_id: string,
     cityId: string,
     address: string,
     userFullName: string,

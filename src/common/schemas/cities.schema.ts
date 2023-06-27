@@ -21,6 +21,22 @@ const CitiesSchema: mongoose.Schema = new mongoose.Schema(
         timestamps: true,
     },
 );
-
+export const aggregationPipelineConfig = (lang) => ([
+    {
+        "langConfig": {
+            "langField": "city_name",
+            "lang": lang
+        }
+    },
+    {
+        "ref": "governorates",
+        "lookupField": "id",
+        "foriegnField": "governorate_id",
+        "langConfig": {
+            "langField": "governorate_name",
+            "lang": lang
+        }
+    }
+])
 loadPlugins(CitiesSchema);
 export { CitiesSchema };
