@@ -11,7 +11,7 @@ const PharmacySchema: mongoose.Schema = new mongoose.Schema(
             type: String,
             match: /^01[0125][0-9]{8}$/gm
         },
-        governorate_id: {
+        governorateId: {
             type: ObjectId,
             ref: 'governorates',
             autopopulate: true
@@ -26,9 +26,6 @@ const PharmacySchema: mongoose.Schema = new mongoose.Schema(
         },
         pharmacyLiscence: {
             type: String
-        },
-        pharmacistId: {
-            type: String
         }
     },
     {
@@ -36,7 +33,7 @@ const PharmacySchema: mongoose.Schema = new mongoose.Schema(
         toObject: { virtuals: true }
     },
 );
-export const aggregationPipelineConfig  = (lang) => ([
+export const aggregationPipelineConfig = (lang) => ([
     {
         "ref": "cities",
         "lookupField": "_id",
@@ -45,20 +42,22 @@ export const aggregationPipelineConfig  = (lang) => ([
             "langField": "city_name",
             "lang": lang
         },
-        "innerLookup": {
-            "ref": "governorates",
-            "lookupField": "id",
-            "foriegnField": "governorate_id",
-            "langConfig": {
-                "langField": "governorate_name",
-                "lang": lang
+        "innerLookup": [
+            {
+                "ref": "governorates",
+                "lookupField": "id",
+                "foriegnField": "governorateId",
+                "langConfig": {
+                    "langField": "governorate_name",
+                    "lang": lang
+                }
             }
-        }
+        ]
     },
     {
         "ref": "governorates",
         "lookupField": "_id",
-        "foriegnField": "governorate_id",
+        "foriegnField": "governorateId",
         "langConfig": {
             "langField": "governorate_name",
             "lang": lang
