@@ -1,7 +1,7 @@
 import { IsBoolean, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class AdminRegisterDTO {
+export class AdminRegister {
     @IsString()
     @ApiProperty()
     pharmacyName: string
@@ -12,7 +12,7 @@ export class AdminRegisterDTO {
 
     @IsString()
     @ApiProperty()
-    governorate_id: string
+    governorateId: string
 
     @IsString()
     @ApiProperty()

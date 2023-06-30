@@ -1,7 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { createTransport } from 'nodemailer';
 import { ConfigService } from '../config/services/config.service';
-
+const registerTemplate = `
+    <p>Thank you for joining Expirest.</p>
+    <p>Please use the verification code below to complete the signing up process.</p> 
+`
+const forgetPassTemplate = `
+<p>Please use the verification code below to complete the password reseting process.</p> 
+`
 
 @Injectable()
 export class MailUtils {
@@ -31,15 +37,16 @@ export class MailUtils {
     });
 
 
-    async sendConfirmationEmail(name, confirmationCode, email) {
+    async sendConfirmationEmail(name, confirmationCode, email,useForgetPassTemplate=false) {
         return await this.transport.sendMail({
             from: this.user,
             to: email,
             subject: "Please confirm your account",
             html: `<h1>Email Confirmation</h1>
-                <h2>Hello ${name}</h2>
-                <p>Thank you for signing up. Please confirm your email by clicking on the following link</p>
-                <a href=http://localhost:3000/api/auth/confirm/${confirmationCode}> Click here</a>
+                <div>
+                    <h2>Hello ${name}</h2>
+                    ${useForgetPassTemplate ? forgetPassTemplate : registerTemplate }
+                    <h2>${confirmationCode}</h2>
                 </div>`,
         })
     }

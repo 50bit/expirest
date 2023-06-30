@@ -8,30 +8,31 @@ import {
   MinLength,
 } from 'class-validator';
 
-export class RegisterPayload {
-  @ApiProperty({ required: true })
+export class Register {
   @IsString()
-  phoneNumber!: string;
+  @ApiProperty()
+  fullName: string
 
-  @ApiProperty({ required: true })
   @IsEmail()
-  email!: string;
+  @ApiProperty()
+  email: string
 
-  @ApiProperty({ required: true })
-  @IsNotEmpty()
-  fullname!: string;
+  @IsString()
+  @ApiProperty()
+  phoneNumber: string
 
-  @ApiProperty({ required: true })
-  @IsNotEmpty()
-  address!: string;
+  @IsString()
+  @ApiProperty()
+  password: string
 
-  @ApiProperty({ required: true })
-  @IsNotEmpty()
-  @MinLength(5)
-  password!: string;
-
-  @ApiProperty({ default: false })
-  @IsOptional()
   @IsBoolean()
-  isSysAdmin!: string;
+  @ApiProperty()
+  isAdmin: Boolean
+
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    required: true
+  })
+  pharmacistId: Express.Multer.File
 }

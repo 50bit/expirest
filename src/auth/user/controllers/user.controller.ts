@@ -19,6 +19,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { CrudController } from '../../../common/crud/controllers/crud.controller';
 import { ObjectIdType } from '../../../common/utils/db.utils';
 import { isEmpty } from 'lodash';
+import { User } from 'src/auth/interfaces/user.dto';
 
 @ApiTags('User')
 @Controller('user')
@@ -39,6 +40,7 @@ export class UserController  {
   @UseGuards(AuthGuard('jwt'))
   @ApiCreatedResponse({
     description: 'User has been successfully updated.',
+    type: User,
   })
   async update(@Request() req: any, @Body() body: any) {
     const id = req.user.id;
