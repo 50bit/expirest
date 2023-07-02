@@ -10,8 +10,7 @@ import { diskStorage } from 'multer';
 import { Login } from '../interfaces/loginResponse.dto';
 import { User } from '../interfaces/user.dto';
 import { Register } from '../interfaces/register.dto';
-import { AddUser } from '../interfaces/addUser.dto';
-import { ChangePassword } from '../interfaces/changePassword.dto';
+import fs from 'fs';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -39,27 +38,6 @@ export class AuthController {
     return await this.authService.login(body);
   }
 
-  @Post('send-change-password-code')
-  @HttpCode(HttpStatus.OK)
-  async sendChangePassCode(@Body() body:any) {
-    return await this.authService.sendChangePassCode(body);
-  }
-
-  @Post('changePassword')
-  @HttpCode(HttpStatus.OK)
-  async changePassword(@Body() body:ChangePassword) {
-    return await this.authService.changePassword(body);
-  }
-
-  @Post('add-user')
-  @ApiCreatedResponse({
-    type: AddUser,
-  })
-  @HttpCode(HttpStatus.OK)
-  async addUser(@Body() body: {"email":any}) {
-    return await this.authService.addUser(body);
-  }
-
   @Post('user-register')
   @ApiCreatedResponse({
     type: User,
@@ -73,7 +51,11 @@ export class AuthController {
       dest: './uploads',
       storage: diskStorage({
         destination: function (req, file, cb) {
-          cb(null, `./uploads/${file.fieldname}`);
+          const dir = `./uploads/${file.fieldname}`
+          if (!fs.existsSync(dir)){
+              fs.mkdirSync(dir, { recursive: true });
+          }
+          cb(null, dir);
         },
         filename: function (req, file, cb) {
           cb(
@@ -100,10 +82,11 @@ export class AuthController {
     return await this.authService.register(body,filesMap,lang);
   }
 
-  @Get('confirm/:id/:verficationCode')
+  @Post('verify/:id/:verficationCode')
+  @ApiCreatedResponse({})
   @HttpCode(HttpStatus.OK)
-  async confirm(@Param('id') id: string,@Param('verficationCode') verficationCode: string,@Res() res: Response) {
-    return await this.authService.confirm(id,verficationCode);
+  async verify(@Param('id') id: string,@Param('verficationCode') verficationCode: string) {
+    return await this.authService.verify(id,verficationCode);
   }
 
   @Post('admin-register')
@@ -119,6 +102,10 @@ export class AuthController {
       dest: './uploads',
       storage: diskStorage({
         destination: function (req, file, cb) {
+          const dir = `./uploads/${file.fieldname}`
+          if (!fs.existsSync(dir)){
+              fs.mkdirSync(dir, { recursive: true });
+          }
           cb(null, `./uploads/${file.fieldname}`);
         },
         filename: function (req, file, cb) {
@@ -145,5 +132,12 @@ export class AuthController {
       pharmacistId:files.pharmacistId[0].filename
     };
     return await this.authService.adminRegister(body,filesMap,lang);
+  }
+
+  @Post('approve/:id')
+  @ApiCreatedResponse({})
+  @HttpCode(HttpStatus.OK)
+  async approve(@Param('id') id: string) {
+    return await this.authService.approve(id);
   }
 }

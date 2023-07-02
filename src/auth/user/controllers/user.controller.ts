@@ -20,6 +20,8 @@ import { CrudController } from '../../../common/crud/controllers/crud.controller
 import { ObjectIdType } from '../../../common/utils/db.utils';
 import { isEmpty } from 'lodash';
 import { User } from 'src/auth/interfaces/user.dto';
+import { AddUser } from 'src/auth/user/interfaces/addUser.dto';
+import { ChangePassword } from '../interfaces/changePassword.dto';
 
 @ApiTags('User')
 @Controller('user')
@@ -64,4 +66,26 @@ export class UserController  {
       HttpStatus.METHOD_NOT_ALLOWED,
     );
   }
+
+  @Post('send-change-password-code')
+  @HttpCode(HttpStatus.OK)
+  async sendChangePassCode(@Body() body:any) {
+    return await this.usersService.sendChangePassCode(body);
+  }
+
+  @Post('change-password/:id')
+  @HttpCode(HttpStatus.OK)
+  async changePassword(@Body() body:ChangePassword,@Param('id') id: string) {
+    return await this.usersService.changePassword(body,id);
+  }
+
+  @Post('add-user')
+  @ApiCreatedResponse({
+    type: AddUser,
+  })
+  @HttpCode(HttpStatus.OK)
+  async addUser(@Body() body: any) {
+    return await this.usersService.addUser(body);
+  }
+
 }

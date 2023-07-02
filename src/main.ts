@@ -5,6 +5,8 @@ import helmet from 'helmet';
 import { setupSwagger } from './swagger';
 import { AppModule } from './app.module';
 import { loggerMiddleware } from './common/middlewares/logger.middleware';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { ErrorsInterceptor } from './common/interceptors/errors.interceptor';
 
 declare const module: any;
 
@@ -12,6 +14,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     cors: true,
   });
+
+  app.useGlobalInterceptors(new TransformInterceptor(),new ErrorsInterceptor());
+
+
   const logger = new Logger('Main');
   const globalPrefix = '/api';
 
@@ -20,15 +26,15 @@ async function bootstrap() {
   app.use(helmet());
   app.use(loggerMiddleware);
 
-  @Catch(Error)
-  class Handler {
-    catch(e: any, res: any) {
-      console.log(e)
-      logger.error(e);
-    }
-  }
+  // @Catch(Error)
+  // class Handler {
+  //   catch(e: any, res: any) {
+  //     console.log(e)
+  //     logger.error(e);
+  //   }
+  // }
 
-  app.useGlobalFilters(new Handler());
+  // app.useGlobalFilters(new Handler());
 
   setupSwagger(app);
 

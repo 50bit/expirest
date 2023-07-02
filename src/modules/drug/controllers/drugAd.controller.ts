@@ -24,7 +24,7 @@ import { DrugAdService } from '../services/drugAd.service';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { ObjectIdType } from 'src/common/utils/db.utils';
-
+import fs from 'fs';
 @ApiTags('Drug Ad')
 @Controller('drug-ad')
 export class DrugAdsController {
@@ -35,11 +35,15 @@ export class DrugAdsController {
     @HttpCode(HttpStatus.OK)
     @UseInterceptors(
         FileFieldsInterceptor([
-            { name: 'images', maxCount: 5 }
+            { name: 'drugImages', maxCount: 5 }
         ], {
             dest: './uploads',
             storage: diskStorage({
                 destination: function (req, file, cb) {
+                    const dir = `./uploads/${file.fieldname}`
+                    if (!fs.existsSync(dir)){
+                        fs.mkdirSync(dir, { recursive: true });
+                    }
                     cb(null, './uploads');
                 },
                 filename: function (req, file, cb) {
@@ -57,11 +61,11 @@ export class DrugAdsController {
             }),
         }),
     )
-    async create(@UploadedFiles() files: { images?: [Express.Multer.File] }, @Body() body: any) {
-        let images: any = files.images.map((file: any) => {
+    async create(@UploadedFiles() files: { drugImages?: [Express.Multer.File] }, @Body() body: any) {
+        let drugImages: any = files.drugImages.map((file: any) => {
             return file.filename;
         })
-        body['images'] = images
+        body['images'] = drugImages
         body['pharmacyId'] = new ObjectIdType(body.pharmacyId)
         return await this.drugAdService.create(body);
     }

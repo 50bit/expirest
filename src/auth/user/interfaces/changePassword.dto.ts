@@ -5,14 +5,6 @@ import {
 
 export class ChangePassword {
   @ApiProperty()
-  @IsEmail()
-  email: string;
-
-  @ApiProperty()
-  @IsString()
-  _id: string;
-
-  @ApiProperty()
   @IsString()
   password: string;
 }

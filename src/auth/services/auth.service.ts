@@ -53,13 +53,13 @@ export class AuthService {
                 );
             } else {
                 const isMatch = await user.isPasswordMatch(
-                    body.password,
-                    user.password,
+                    body.password.toString(),
+                    user.password.toString(),
                 );
                 // Invalid password
                 if (!isMatch) {
                     throw new HttpException(
-                        'Error, Invalid Password',
+                        'Error, Invalid User or Password',
                         HttpStatus.METHOD_NOT_ALLOWED,
                     );
                 } else {
@@ -81,18 +81,19 @@ export class AuthService {
     async login(body: any) {
         const user = await this.userModel.findOne({
             email: body.email,
-        }).select("password");
+        }, { "password": 1, "email": 1, "fullName": 1, "activatedByEmail": 1, "approved": 1 })
+
         if (!user) {
             throw new HttpException(
                 'Error, Account not found',
                 HttpStatus.METHOD_NOT_ALLOWED,
             );
         } else {
-            const isMatch = await user.isPasswordMatch(body.password, user.password);
+            const isMatch = await user.isPasswordMatch(body.password.toString(), user.password.toString());
             // Invalid password
             if (!isMatch) {
                 throw new HttpException(
-                    'Error, Invalid Password',
+                    'Error, Invalid User or Password',
                     HttpStatus.METHOD_NOT_ALLOWED,
                 );
             } else {
@@ -189,7 +190,7 @@ export class AuthService {
 
         const verficationCode = random(10000, 99999)
         try {
-            await this.mailUtils.sendConfirmationEmail(user.fullName, verficationCode, user.email)
+            await this.mailUtils.sendVerificationEmail(user.fullName, verficationCode, user.email)
         } catch (error) {
             console.log(error)
             return new HttpException(
@@ -207,10 +208,10 @@ export class AuthService {
         await this.userModel.create(user);
         const pipelineConfig = aggregationPipelineConfig(lang)
         const pipeline = aggregationMan(pipelineConfig, { "email": user.email })
-        return await this.userModel.aggregate(pipeline);
+        return (await this.userModel.aggregate(pipeline))[0];
     }
 
-    async confirm(id, verficationCode) {
+    async verify(id, verficationCode) {
         const user = await this.userModel.findOne({ "_id": id, "verficationCode": verficationCode })
         if (user) {
             await this.userModel.updateOne({ "_id": id }, { "$set": { "activatedByEmail": true } })
@@ -225,61 +226,18 @@ export class AuthService {
         );
     }
 
-    async addUser(body) {
-        const userExists = await this.userModel.findOne({
-            email: body.email
-        });
-
-        if (userExists)
-            return new HttpException(
-                'User already exists, please contact the administration',
-                HttpStatus.METHOD_NOT_ALLOWED,
-            );
-
-        const verficationCode = random(10000, 99999)
-        try {
-            await this.mailUtils.sendConfirmationEmail('', verficationCode, body.email)
-        } catch (error) {
-            console.log(error)
-            return new HttpException(
-                'Email is not valid or can\'t be reached',
-                HttpStatus.METHOD_NOT_ALLOWED,
-            );
-        }
-    }
-
-    async sendChangePassCode(body) {
-        const verficationCode = random(10000, 99999)
-        try {
-            await this.userModel.updateOne({ _id: body.email }, { "$set": { verficationCode } })
-            await this.mailUtils.sendConfirmationEmail('', verficationCode, body.email, true)
-        } catch (error) {
-            console.log(error)
-            return new HttpException(
-                'Email is not valid or can\'t be reached',
-                HttpStatus.METHOD_NOT_ALLOWED,
-            );
-        }
-    }
-
-    async changePassword(body) {
-        const user = await this.userModel
-            .findOne({
-                _id: body._id,
-            })
-
+    async approve(id) {
+        const user = await this.userModel.findOne({ "_id": id})
         if (user) {
-            await this.userModel.updateOne(
-                { _id: body._id },
-                {
-                    password: body.password,
-                },
-            );
-        } else {
-            throw new HttpException(
-                'User Not Found Or Has No Access',
-                HttpStatus.METHOD_NOT_ALLOWED,
-            );
+            await this.userModel.updateOne({ "_id": id }, { "$set": { "approved": true } })
+            let updatedUser = JSON.parse(JSON.stringify(user))
+            updatedUser["approved"] = true;
+            return updatedUser
         }
+
+        return new HttpException(
+            'Please make sure the user exists',
+            HttpStatus.METHOD_NOT_ALLOWED,
+        );
     }
 }

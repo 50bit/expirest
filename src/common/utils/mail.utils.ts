@@ -37,7 +37,7 @@ export class MailUtils {
     });
 
 
-    async sendConfirmationEmail(name, confirmationCode, email,useForgetPassTemplate=false) {
+    async sendVerificationEmail(name, verificationCode, email,useForgetPassTemplate=false) {
         return await this.transport.sendMail({
             from: this.user,
             to: email,
@@ -46,7 +46,7 @@ export class MailUtils {
                 <div>
                     <h2>Hello ${name}</h2>
                     ${useForgetPassTemplate ? forgetPassTemplate : registerTemplate }
-                    <h2>${confirmationCode}</h2>
+                    <h2>${verificationCode}</h2>
                 </div>`,
         })
     }

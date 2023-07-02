@@ -3,155 +3,79 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { AuthService } from '../../services/auth.service';
 import { CrudService } from 'src/common/crud/services/crud.service';
+import { MailUtils } from 'src/common/utils/mail.utils';
+import { random } from 'lodash';
+import { aggregationPipelineConfig } from '../schemas/user.schema';
+import { aggregationMan } from 'src/common/utils/aggregationMan.utils';
+import { ObjectIdType } from 'src/common/utils/db.utils';
 
 @Injectable()
 export class UserService extends CrudService {
   constructor(
     private readonly authService: AuthService,
     @InjectModel('users') public readonly model: Model<any>,
+    @InjectModel('pharmacies') public readonly pharmacyModel: Model<any>,
+    private readonly mailUtils: MailUtils
   ) {
     super(model);
   }
 
-  async changePassword(userObject: any, body: any) {
-    const user = await this.model
-      .findOne({
-        _id: userObject.id,
-      })
-      .select('fullname email username password isSysAdmin');
-
-    if (user) {
-      const isMatch = await user.isPasswordMatch(
-        body.oldPassword,
-        user.password,
-      );
-      if (isMatch) {
-        await this.model.updateOne(
-          { _id: userObject.id },
-          {
-            password: body.newPassword,
-          },
-        );
-        return {
-          email: user.email,
-          phoneNumber: user.phoneNumber,
-          fullName: user.fullName,
-        };
-      } else {
-        throw new HttpException(
-          'User Not Found',
-          HttpStatus.METHOD_NOT_ALLOWED,
-        );
-      }
-    } else {
-      throw new HttpException(
-        'User Not Found Or Has No Access',
-        HttpStatus.METHOD_NOT_ALLOWED,
-      );
-    }
-  }
-
-  async login(body: any) {
-    const user = await this.model
-      .findOne({
-        phoneNumber: body.phoneNumber,
-      })
-      .select('fullname email username password isSysAdmin');
-    if (!user) {
-      throw new HttpException(
-        'User Not Found Or Has No Access',
-        HttpStatus.METHOD_NOT_ALLOWED,
-      );
-    } else {
-      const isMatch = await user.isPasswordMatch(body.password, user.password);
-      // Invalid password
-      if (!isMatch) {
-        throw new HttpException(
-          'User Not Found',
-          HttpStatus.METHOD_NOT_ALLOWED,
-        );
-      } else {
-        return await {
-          fullName: user.fullName,
-          token: await this.authService.generateToken({
-            id: user._id,
-          }),
-        };
-      }
-    }
-  }
-
-  async authenticationLogin(body: any) {
-    const user = await this.model
-      .findOne({
-        phoneNumber: body.phoneNumber,
-      })
-      .select('fullname email username password isSysAdmin');
-    if (!user) {
-      throw new HttpException('User Not Found', HttpStatus.METHOD_NOT_ALLOWED);
-    } else {
-      const isMatch = await user.isPasswordMatch(body.password, user.password);
-      // Invalid password
-      if (!isMatch) {
-        throw new HttpException(
-          'User Not Found',
-          HttpStatus.METHOD_NOT_ALLOWED,
-        );
-      } else {
-        return await {
-          fullName: user.fullName,
-          token: this.authService.generateToken({
-            id: user._id,
-          }),
-        };
-      }
-    }
-  }
-
-  async authorizationLogin(body: any) {
-    const user = await this.model
-      .findOne({
-        phoneNumber: body.phoneNumber,
-      })
-      .select('fullname email username password isSysAdmin');
-    if (!user) {
-      throw new HttpException('User Not Found', HttpStatus.METHOD_NOT_ALLOWED);
-    } else {
-      const isMatch = await user.isPasswordMatch(body.password, user.password);
-      // Invalid password
-      if (!isMatch) {
-        throw new HttpException(
-          'User Not Found',
-          HttpStatus.METHOD_NOT_ALLOWED,
-        );
-      } else {
-        return await {
-          fullName: user.fullName,
-          token: this.authService.generateToken({
-            id: user._id,
-          }),
-        };
-      }
-    }
-  }
-
-  async register(body: any) {
-    const user = await this.model.findOne({
-      phoneNumber: body.phoneNumber,
+  async addUser(body) {
+    const userExists = await this.model.findOne({
+      email: body.email
     });
-    if (user) {
-      throw new HttpException(
-        'Error, Email or Phone Number is already in use',
+
+    if (userExists)
+      return new HttpException(
+        'User already exists, please contact the administration',
         HttpStatus.METHOD_NOT_ALLOWED,
       );
+
+    const verficationCode = random(10000, 99999)
+    try {
+      await this.model.create(body);
+      await this.mailUtils.sendVerificationEmail('', verficationCode, body.email)
+    } catch (error) {
+      console.log(error)
+      return new HttpException(
+        'Email is not valid or can\'t be reached',
+        HttpStatus.METHOD_NOT_ALLOWED,
+      );
+    }
+  }
+
+  async sendChangePassCode(body) {
+    const verficationCode = random(10000, 99999)
+    try {
+      await this.model.updateOne({ _id: body.email }, { "$set": { verficationCode } })
+      await this.mailUtils.sendVerificationEmail('', verficationCode, body.email, true)
+    } catch (error) {
+      console.log(error)
+      return new HttpException(
+        'Email is not valid or can\'t be reached',
+        HttpStatus.METHOD_NOT_ALLOWED,
+      );
+    }
+  }
+
+  async changePassword(body,_id) {
+    const user = await this.model
+      .findOne({
+        _id,
+      })
+
+    if (user) {
+      await this.model.updateOne(
+        { _id },
+        {
+          "$set":{password: body.password},
+        },
+      );
     } else {
-      const userObject = {
-        email: body.email,
-        phoneNumber: body.phoneNumber,
-        fullName: user.fullName,
-        password: body.password,
-      };
-      return await this.model.create(userObject);
+      throw new HttpException(
+        'User Not Found Or Has No Access',
+        HttpStatus.METHOD_NOT_ALLOWED,
+      );
     }
   }
 }

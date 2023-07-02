@@ -14,33 +14,15 @@ export const loadPlugins = (schema: any) => {
 };
 
 export const onUserUpdate = (schema: Schema) => {
-  schema.pre<any>('updateOne', function(next) {
+  schema.pre<any>('updateOne', function (next) {
     if (this._update.$set && this._update.$set.password) {
-      bcrypt.genSalt(10, (err, salt) => {
-        if (err) {
-          return next(err);
-        }
-        bcrypt.hash(this._update.$set.password, salt, (err2, hash: any) => {
-          if (err2) {
-            return next(err2);
-          }
-          this._update.$set.password = hash;
-          next();
-        });
-      });
+      const hash = bcrypt.hashSync(this._update.$set.password.toString(), bcrypt.genSaltSync(8), null);
+      this._update.$set.password = hash;
+      next();
     } else if (this._update.password) {
-      bcrypt.genSalt(10, (err, salt) => {
-        if (err) {
-          return next(err);
-        }
-        bcrypt.hash(this._update.password, salt, (err2, hash: any) => {
-          if (err2) {
-            return next(err2);
-          }
-          this._update.password = hash;
-          next();
-        });
-      });
+      const hash = bcrypt.hashSync(this._update.password, bcrypt.genSaltSync(10), null);
+      this._update.password = hash;
+      next();
     } else {
       next();
     }
@@ -49,51 +31,11 @@ export const onUserUpdate = (schema: Schema) => {
 };
 
 export const onUserSave = (schema: Schema) => {
-  schema.pre<any>('save', function(next) {
-    bcrypt.genSalt(10, (err, salt) => {
-      if (err) {
-        return next(err);
-      }
-      bcrypt.hash(this.password, salt, (err2, hash: any) => {
-        if (err2) {
-          return next(err2);
-        }
-        this.password = hash;
-        next();
-      });
-    });
-  });
-
-  schema.pre<any>('updateOne', function(next) {
-    if (this._update.$set && this._update.$set.password) {
-      bcrypt.genSalt(10, (err, salt) => {
-        if (err) {
-          return next(err);
-        }
-        bcrypt.hash(this._update.$set.password, salt, (err2, hash: any) => {
-          if (err2) {
-            return next(err2);
-          }
-          this._update.$set.password = hash;
-          next();
-        });
-      });
-    } else if (this._update.password) {
-      bcrypt.genSalt(10, (err, salt) => {
-        if (err) {
-          return next(err);
-        }
-        bcrypt.hash(this._update.password, salt, (err2, hash: any) => {
-          if (err2) {
-            return next(err2);
-          }
-          this._update.password = hash;
-          next();
-        });
-      });
-    } else {
+  schema.pre<any>('save', function (next) {
+    if (this.password) {
+      const hash = bcrypt.hashSync(this.password.toString(), bcrypt.genSaltSync(8), null);
+      this.password = hash;
       next();
     }
   });
-  schema.methods.isPasswordMatch = bcrypt.compareSync;
 };
