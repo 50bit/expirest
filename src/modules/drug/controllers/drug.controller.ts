@@ -18,11 +18,15 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { aggregationPipelineConfig } from 'src/modules/drug/schemas/drugs.schema';
 import { aggregationMan } from 'src/common/utils/aggregationMan.utils';
+import { CrudController } from 'src/common/crud/controllers/crud.controller';
 
-@ApiTags('Drug')
+@ApiTags('Drugs')
 @Controller('drugs')
-export class DrugController {
+@ApiBearerAuth('access-token')
+@UseGuards(AuthGuard('jwt'))
+export class DrugController extends CrudController{
   constructor(public readonly drugsService: DrugService) {
+    super(drugsService)
   }
 
   @Get()

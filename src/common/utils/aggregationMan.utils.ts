@@ -34,16 +34,39 @@ export const aggregationMan = (aggregation, query) => {
 }
 
 export const buildProjection = (lookupConfig) => {
-    if(!lookupConfig.exclude) return []
+    if (!lookupConfig.exclude) return []
     let projection = {}
-    forEach(lookupConfig.exclude,(field)=>{
-        projection = {...projection,...zipObject([field],[0])}
+    forEach(lookupConfig.exclude, (field) => {
+        projection = { ...projection, ...zipObject([field], [0]) }
     })
     return [
         {
             "$project": projection
         }
     ]
+}
+
+export const addRemainingTimeField = (lookupConfig) => {
+    if(!lookupConfig.computedDateField) return []
+    const remaining_time_value = {
+        $dateDiff: {
+            startDate: new Date(),
+            endDate: {
+                $dateAdd:{
+                    startDate: `$${lookupConfig.computedDateField.relatedField}`,
+                    unit: "hour",
+                    amount: lookupConfig.computedDateField.maxDuration
+                }
+            },
+            unit: "millisecond"
+        }
+    }
+    const remaining_time = [{
+        $addFields: {
+            ...zipObject([lookupConfig.computedDateField.name], [remaining_time_value])
+        }
+    }]
+    return remaining_time
 }
 
 export const lookupBuilder = (lookupConfig) => {
@@ -55,6 +78,8 @@ export const lookupBuilder = (lookupConfig) => {
     innerLookup = flatten(innerLookup);
 
     const project = buildProjection(lookupConfig)
+
+    const remaining_time = addRemainingTimeField(lookupConfig)
 
     if (lookupConfig.langConfig && !lookupConfig.ref)
         return langPipeline(lookupConfig.langConfig)
@@ -88,7 +113,8 @@ export const lookupBuilder = (lookupConfig) => {
                 preserveNullAndEmptyArrays: true,
             },
         },
-        ...project
+        ...project,
+        ...remaining_time
     ]
 }
 

@@ -11,11 +11,13 @@ import { ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
 import { aggregationMan } from 'src/common/utils/aggregationMan.utils';
 import { aggregationPipelineConfig } from 'src/modules/governorate/schemas/governorates.schema';
 import { Governorate } from '../interfaces/governorate.dto';
+import { CrudController } from 'src/common/crud/controllers/crud.controller';
 
 @ApiTags('Governorates')
 @Controller('governorates')
-export class GovernorateController {
+export class GovernorateController extends CrudController {
   constructor(public readonly governorateService: GovernorateService) {
+    super(governorateService)
   }
 
   @Get()

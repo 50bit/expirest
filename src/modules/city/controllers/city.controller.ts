@@ -19,11 +19,13 @@ import { AuthGuard } from '@nestjs/passport';
 import { aggregationPipelineConfig } from 'src/modules/city/schemas/cities.schema';
 import { aggregationMan } from 'src/common/utils/aggregationMan.utils';
 import { City } from '../interfaces/city.dto';
+import { CrudController } from 'src/common/crud/controllers/crud.controller';
 
 @ApiTags('Cities')
 @Controller('cities')
-export class CityController {
+export class CityController extends CrudController{
   constructor(public readonly cityService: CityService) {
+    super(cityService)
   }
 
   @Get()

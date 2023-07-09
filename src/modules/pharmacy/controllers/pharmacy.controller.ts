@@ -10,12 +10,16 @@ import {
 import { aggregationPipelineConfig } from '../schemas/pharmacy.schema';
 import { aggregationMan } from 'src/common/utils/aggregationMan.utils';
 import { ApiBearerAuth, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
-import { Pharmacy } from '../interfaces copy/pharmacy.dto';
+import { Pharmacy } from '../interfaces/pharmacy.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { CrudController } from 'src/common/crud/controllers/crud.controller';
 @ApiTags('Pharmacies')
 @Controller('pharmacy')
-export class PharmacyController {
+@ApiBearerAuth('access-token')
+@UseGuards(AuthGuard('jwt'))
+export class PharmacyController extends CrudController{
     constructor(public readonly pharmacyService: PharmacyService) {
+        super(pharmacyService)
     }
 
     @Get()
@@ -23,8 +27,6 @@ export class PharmacyController {
     @ApiCreatedResponse({
         type: [Pharmacy],
     })
-    @ApiBearerAuth('access-token')
-    @UseGuards(AuthGuard('jwt'))
     async getPharmacies(@Request() req: any, @Headers() headers) {
         const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
             ? headers['accept-language']

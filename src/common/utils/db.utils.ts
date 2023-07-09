@@ -36,6 +36,8 @@ export const onUserSave = (schema: Schema) => {
       const hash = bcrypt.hashSync(this.password.toString(), bcrypt.genSaltSync(8), null);
       this.password = hash;
       next();
+    }else{
+      next();
     }
   });
 };

@@ -8,27 +8,20 @@ import {
   MinLength,
 } from 'class-validator';
 
-export class Register {
+export class UpdateUser {
   @IsString()
-  @ApiProperty()
+  @ApiProperty({required:false})
   fullName: string
 
   @IsEmail()
-  @ApiProperty()
+  @ApiProperty({required:false})
   email: string
 
   @IsString()
-  @ApiProperty()
+  @ApiProperty({required:false})
   phoneNumber: string
 
   @IsString()
-  @ApiProperty()
+  @ApiProperty({required:false})
   password: string
-
-  @ApiProperty({
-    type: String,
-    format: 'binary',
-    required: true
-  })
-  pharmacistId: Express.Multer.File
 }

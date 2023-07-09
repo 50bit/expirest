@@ -89,7 +89,7 @@ export class CrudService {
 
   async create(body: any) {
     try {
-      return (await this.Model.create(body)).toJson();
+      return (await this.Model.create(body));
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.METHOD_NOT_ALLOWED);
     }

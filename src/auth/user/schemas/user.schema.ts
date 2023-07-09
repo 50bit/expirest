@@ -10,17 +10,20 @@ const UserSchema = new mongoose.Schema(
   {
     fullName: {
       type: String,
+      default: null
     },
     email: {
       type: String,
-      required: true
+      default: null
     },
     phoneNumber: {
       type: String,
+      default: null
     },
     password: {
       type: String,
       select: false,
+      default: null
     },
     isAdmin: {
       type: Boolean,
@@ -31,17 +34,20 @@ const UserSchema = new mongoose.Schema(
       default: false,
     },
     pharmacyId:{
-      type: ObjectId
+      type: ObjectId,
+      default: null
     },
     pharmacistId:{
-      type: String
+      type: String,
+      default: null
     },
     approved:{
       type: Boolean,
       default: false,
     },
     verficationCode:{
-      type: Number
+      type: Number,
+      default: null
     }
   },
   {

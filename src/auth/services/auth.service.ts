@@ -39,7 +39,8 @@ export class AuthService {
                     id: '000000000000000000000000',
                     isAdmin: true,
                     fullName: 'Admin',
-                    email: 'admin@mail.com'
+                    email: 'admin@mail.com',
+                    pharmacyId: '000000000000000000000000',
                 }),
             };
         } else {
@@ -70,7 +71,8 @@ export class AuthService {
                             id: user._id,
                             isAdmin: user.isAdmin,
                             fullName: user.fullName,
-                            email: user.email
+                            email: user.email,
+                            pharmacyId: user.pharmacyId
                         }),
                     };
                 }
@@ -81,7 +83,7 @@ export class AuthService {
     async login(body: any) {
         const user = await this.userModel.findOne({
             email: body.email,
-        }, { "password": 1, "email": 1, "fullName": 1, "activatedByEmail": 1, "approved": 1 })
+        }, { "password": 1, "email": 1, "fullName": 1, "activatedByEmail": 1, "approved": 1, "pharmacyId": 1 })
 
         if (!user) {
             throw new HttpException(
@@ -116,7 +118,8 @@ export class AuthService {
                         id: user._id,
                         fullName: user.fullName,
                         isAdmin: user.isAdmin,
-                        email: user.email
+                        email: user.email,
+                        pharmacyId: user.pharmacyId
                     }),
                 };
             }
@@ -146,7 +149,7 @@ export class AuthService {
 
         const pipelineConfig = aggregationPipelineConfig(lang)
         const pipeline = aggregationMan(pipelineConfig, { "email": user.email })
-        return await this.userModel.aggregate(pipeline);
+        return (await this.userModel.aggregate(pipeline))[0];
     }
 
     async adminRegister(body: any, files: any, lang: string) {

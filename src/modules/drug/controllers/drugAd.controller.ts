@@ -15,36 +15,46 @@ import {
     UseInterceptors,
     UploadedFiles,
     Res,
+    Delete,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiCreatedResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
-import { aggregationPipelineConfig } from 'src/modules/drug/schemas/drugs.schema';
+import { aggregationPipelineConfig } from 'src/modules/drug/schemas/drugAd.schema';
 import { aggregationMan } from 'src/common/utils/aggregationMan.utils';
 import { DrugAdService } from '../services/drugAd.service';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { ObjectIdType } from 'src/common/utils/db.utils';
 import fs from 'fs';
+import { DrugAd } from '../interfaces/drugAd.dto';
+import { clone, forEach, pickBy, identity, map } from 'lodash';
+import { UpdateDrugAd } from '../interfaces/updateDrugAd.dto';
 @ApiTags('Drug Ad')
 @Controller('drug-ad')
+@ApiBearerAuth('access-token')
+@UseGuards(AuthGuard('jwt'))
 export class DrugAdsController {
     constructor(public readonly drugAdService: DrugAdService) {
     }
 
-    @Post('')
+    @Post('create')
     @HttpCode(HttpStatus.OK)
+    @ApiCreatedResponse({
+        type: DrugAd,
+    })
+    @ApiConsumes('multipart/form-data')
     @UseInterceptors(
         FileFieldsInterceptor([
-            { name: 'drugImages', maxCount: 5 }
+            { name: 'drugAdImages', maxCount: 5 }
         ], {
             dest: './uploads',
             storage: diskStorage({
                 destination: function (req, file, cb) {
                     const dir = `./uploads/${file.fieldname}`
-                    if (!fs.existsSync(dir)){
+                    if (!fs.existsSync(dir)) {
                         fs.mkdirSync(dir, { recursive: true });
                     }
-                    cb(null, './uploads');
+                    cb(null, dir);
                 },
                 filename: function (req, file, cb) {
                     cb(
@@ -61,13 +71,16 @@ export class DrugAdsController {
             }),
         }),
     )
-    async create(@UploadedFiles() files: { drugImages?: [Express.Multer.File] }, @Body() body: any) {
-        let drugImages: any = files.drugImages.map((file: any) => {
-            return file.filename;
+    async create(@UploadedFiles() files: { drugAdImages?: [Express.Multer.File] }, @Body() body: DrugAd, @Request() req: any) {
+        const pharmacyId = req.user.pharmacyId
+        let drugAdImages: any = files.drugAdImages.map((file: any) => {
+            return "drugAdImages/" + file.filename;
         })
-        body['images'] = drugImages
-        body['pharmacyId'] = new ObjectIdType(body.pharmacyId)
-        return await this.drugAdService.create(body);
+        const drug = clone(body)
+        drug['drugAdImages'] = drugAdImages
+        drug['pharmacyId'] = new ObjectIdType(pharmacyId)
+        console.log(drug)
+        return await this.drugAdService.create(drug);
     }
 
     @Get('approve/:id')
@@ -94,14 +107,87 @@ export class DrugAdsController {
         return await this.drugAdService.aggregate(pipeline);
     }
 
-    @Get()
+    @Put(':id')
     @HttpCode(HttpStatus.OK)
-    async getDrugAds(@Request() req: any, @Headers() headers) {
+    @ApiCreatedResponse({
+        type: DrugAd,
+    })
+    @ApiConsumes('multipart/form-data')
+    @UseInterceptors(
+        FileFieldsInterceptor([
+            { name: 'drugAdImages', maxCount: 5 }
+        ], {
+            dest: './uploads',
+            storage: diskStorage({
+                destination: function (req, file, cb) {
+                    const dir = `./uploads/${file.fieldname}`
+                    if (!fs.existsSync(dir)) {
+                        fs.mkdirSync(dir, { recursive: true });
+                    }
+                    cb(null, dir);
+                },
+                filename: function (req, file, cb) {
+                    cb(
+                        null,
+                        'expirest' +
+                        '-' +
+                        file.originalname +
+                        '-' +
+                        Date.now() +
+                        '.' +
+                        file.mimetype.split('/')[1],
+                    );
+                },
+            }),
+        }),
+    )
+    async updateDrugAd(@UploadedFiles() files: { drugAdImages?: [Express.Multer.File] }, @Request() req: any, @Headers() headers, @Param('id') id: string, @Body() body: UpdateDrugAd) {
+        const pharmacyId = req.user.pharmacyId
+        const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
+            ? headers['accept-language']
+            : 'multiLang');
+        let drugAdImages = []
+        if (files.drugAdImages)
+            drugAdImages = files.drugAdImages.map((file: any) => {
+                return "drugAdImages/" + file.filename;
+            })
+        const drug = pickBy(clone(body), identity);
+        drug['drugAdImages'] = drugAdImages
+        drug['pharmacyId'] = new ObjectIdType(pharmacyId)
+        drug['imagesToDelete'] = Array.isArray(drug.imagesToDelete) ? drug.imagesToDelete : (drug.imagesToDelete ? drug.imagesToDelete.split(',') : [])
+        return this.drugAdService.updateDrugAd({ id, pharmacyId, lang }, drug)
+    }
+
+    @Get("my-ads")
+    @HttpCode(HttpStatus.OK)
+    async getMyDrugAds(@Request() req: any, @Headers() headers,) {
+        const pharmacyId = req.user.pharmacyId
         const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
             ? headers['accept-language']
             : 'multiLang');
         const pipelineConfig = aggregationPipelineConfig(lang)
-        const pipeline = aggregationMan(pipelineConfig, {})
+        const pipeline = aggregationMan(pipelineConfig, { pharmacyId: new ObjectIdType(pharmacyId) })
+        return await this.drugAdService.aggregate(pipeline);
+    }
+
+
+    @Delete(':id')
+    @HttpCode(HttpStatus.OK)
+    async delete(@Param('id') id: string) {
+        return this.drugAdService.deleteDrugAd(id);
+    }
+
+    @Post("search")
+    @HttpCode(HttpStatus.OK)
+    async searchDrugAds(@Request() req: any, @Headers() headers, @Body() body: any) {
+        const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
+            ? headers['accept-language']
+            : 'multiLang');
+        const search = clone(body)
+        if(search.pharmacyId)
+            search["pharmacyId"] =  new ObjectIdType(search.pharmacyId)
+        const pipelineConfig = aggregationPipelineConfig(lang)
+        const pipeline = aggregationMan(pipelineConfig, search)
         return await this.drugAdService.aggregate(pipeline);
     }
 }

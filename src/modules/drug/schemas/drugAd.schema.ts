@@ -13,7 +13,8 @@ const DrugAdSchema: mongoose.Schema = new mongoose.Schema(
         },
         packageUnits: {
             type: Number,
-            required: true
+            required: false,
+            default: 1
         },
         expiryDate: {
             type: Number,
@@ -25,7 +26,8 @@ const DrugAdSchema: mongoose.Schema = new mongoose.Schema(
         },
         availablePackageUnits: {
             type: Number,
-            required: true
+            required: false,
+            default: 1
         },
         priceOnPackage: {
             type: Number,
@@ -42,7 +44,7 @@ const DrugAdSchema: mongoose.Schema = new mongoose.Schema(
         notes: {
             type: String
         },
-        images: {
+        drugAdImages: {
             type: [String]
         },
         status: {

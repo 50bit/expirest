@@ -15,6 +15,7 @@ import {
     UseInterceptors,
     UploadedFiles,
     Res,
+    Delete,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
@@ -25,16 +26,19 @@ import { diskStorage } from 'multer';
 import { DrugRequestService } from '../services/drugRequest.service';
 import { ObjectIdType } from 'src/common/utils/db.utils';
 
-@ApiTags('Drug Ad')
-@Controller('drug-ad')
+@ApiTags('Drug Request')
+@Controller('drug-request')
+@ApiBearerAuth('access-token')
+@UseGuards(AuthGuard('jwt'))
 export class DrugRequestController {
     constructor(public readonly drugRequestService: DrugRequestService) {
     }
 
     @Post('')
     @HttpCode(HttpStatus.OK)
-    async create(@Body() body: any) {
-        body['pharmacyId'] = new ObjectIdType(body.pharmacyId)
+    async create(@Request() req: any,@Body() body: any) {
+        const pharmacyId = req.user.pharmacyId
+        body['pharmacyId'] = new ObjectIdType(pharmacyId)
         return await this.drugRequestService.create(body);
     }
 
@@ -70,6 +74,37 @@ export class DrugRequestController {
             : 'multiLang');
         const pipelineConfig = aggregationPipelineConfig(lang)
         const pipeline = aggregationMan(pipelineConfig, {})
+        return await this.drugRequestService.aggregate(pipeline);
+    }
+
+
+    @Get("my-requests")
+    @HttpCode(HttpStatus.OK)
+    async getMyDrugAds(@Request() req: any, @Headers() headers) {
+        const pharmacyId = req.user.pharmacyId
+        const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
+            ? headers['accept-language']
+            : 'multiLang');
+        const pipelineConfig = aggregationPipelineConfig(lang)
+        const pipeline = aggregationMan(pipelineConfig, { pharmacyId: new ObjectIdType(pharmacyId) })
+        return await this.drugRequestService.aggregate(pipeline);
+    }
+
+
+    @Delete(':id')
+    @HttpCode(HttpStatus.OK)
+    async delete(@Param('id') id: string) {
+        return await this.drugRequestService.delete(id);
+    }
+
+    @Post("search")
+    @HttpCode(HttpStatus.OK)
+    async searchDrugAds(@Request() req: any, @Headers() headers, @Body() body: any) {
+        const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
+            ? headers['accept-language']
+            : 'multiLang');
+        const pipelineConfig = aggregationPipelineConfig(lang)
+        const pipeline = aggregationMan(pipelineConfig, body)
         return await this.drugRequestService.aggregate(pipeline);
     }
 }

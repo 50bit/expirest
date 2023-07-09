@@ -39,14 +39,14 @@ export class AdminRegister {
     password: string
 
     @ApiProperty({ 
-        type: 'string',
+        type: String,
         format: 'binary',
         required: true 
     })
     pharmacyLiscence: Express.Multer.File
 
     @ApiProperty({ 
-        type: 'string',
+        type: String,
         format: 'binary',
         required: true 
     })
