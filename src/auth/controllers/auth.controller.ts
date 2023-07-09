@@ -50,30 +50,7 @@ export class AuthController {
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'pharmacistId', maxCount: 1 },
-    ], {
-      dest: './uploads',
-      storage: diskStorage({
-        destination: function (req, file, cb) {
-          const dir = `./uploads/${file.fieldname}`
-          if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
-          }
-          cb(null, dir);
-        },
-        filename: function (req, file, cb) {
-          cb(
-            null,
-            'expirest' +
-            '-' +
-            file.originalname.replace(".pdf", "") +
-            '-' +
-            Date.now() +
-            '.' +
-            file.mimetype.split('/')[1],
-          );
-        },
-      }),
-    }),
+    ]),
   )
   async register(@UploadedFiles() files: { pharmacistId?: Express.Multer.File }, @Body() body: Register, @Headers() headers) {
     const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
@@ -105,30 +82,7 @@ export class AuthController {
     FileFieldsInterceptor([
       { name: 'pharmacyLiscence', maxCount: 1 },
       { name: 'pharmacistId', maxCount: 1 },
-    ], {
-      dest: './uploads',
-      storage: diskStorage({
-        destination: function (req, file, cb) {
-          const dir = `./uploads/${file.fieldname}`
-          if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
-          }
-          cb(null, `./uploads/${file.fieldname}`);
-        },
-        filename: function (req, file, cb) {
-          cb(
-            null,
-            'expirest' +
-            '-' +
-            file.originalname.replace(".pdf", "") +
-            '-' +
-            Date.now() +
-            '.' +
-            file.mimetype.split('/')[1],
-          );
-        },
-      }),
-    }),
+    ]),
   )
   async create(@UploadedFiles() files: { pharmacyLiscence?: Express.Multer.File, pharmacistId?: Express.Multer.File }, @Body() body: AdminRegister, @Headers() headers) {
     const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'

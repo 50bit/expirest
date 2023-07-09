@@ -46,30 +46,7 @@ export class DrugAdsController {
     @UseInterceptors(
         FileFieldsInterceptor([
             { name: 'drugAdImages', maxCount: 5 }
-        ], {
-            dest: './uploads',
-            storage: diskStorage({
-                destination: function (req, file, cb) {
-                    const dir = `./uploads/${file.fieldname}`
-                    if (!fs.existsSync(dir)) {
-                        fs.mkdirSync(dir, { recursive: true });
-                    }
-                    cb(null, dir);
-                },
-                filename: function (req, file, cb) {
-                    cb(
-                        null,
-                        'expirest' +
-                        '-' +
-                        file.originalname +
-                        '-' +
-                        Date.now() +
-                        '.' +
-                        file.mimetype.split('/')[1],
-                    );
-                },
-            }),
-        }),
+        ]),
     )
     async create(@UploadedFiles() files: { drugAdImages?: [Express.Multer.File] }, @Body() body: DrugAd, @Request() req: any) {
         const pharmacyId = req.user.pharmacyId
@@ -116,30 +93,7 @@ export class DrugAdsController {
     @UseInterceptors(
         FileFieldsInterceptor([
             { name: 'drugAdImages', maxCount: 5 }
-        ], {
-            dest: './uploads',
-            storage: diskStorage({
-                destination: function (req, file, cb) {
-                    const dir = `./uploads/${file.fieldname}`
-                    if (!fs.existsSync(dir)) {
-                        fs.mkdirSync(dir, { recursive: true });
-                    }
-                    cb(null, dir);
-                },
-                filename: function (req, file, cb) {
-                    cb(
-                        null,
-                        'expirest' +
-                        '-' +
-                        file.originalname +
-                        '-' +
-                        Date.now() +
-                        '.' +
-                        file.mimetype.split('/')[1],
-                    );
-                },
-            }),
-        }),
+        ]),
     )
     async updateDrugAd(@UploadedFiles() files: { drugAdImages?: [Express.Multer.File] }, @Request() req: any, @Headers() headers, @Param('id') id: string, @Body() body: UpdateDrugAd) {
         const pharmacyId = req.user.pharmacyId
