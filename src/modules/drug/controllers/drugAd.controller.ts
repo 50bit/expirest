@@ -27,7 +27,7 @@ import { diskStorage } from 'multer';
 import { ObjectIdType } from 'src/common/utils/db.utils';
 import fs from 'fs';
 import { DrugAd } from '../interfaces/drugAd.dto';
-import { clone, forEach, pickBy, identity, map } from 'lodash';
+import { clone, forEach, pickBy, identity, map, pick } from 'lodash';
 import { UpdateDrugAd } from '../interfaces/updateDrugAd.dto';
 @ApiTags('Drug Ad')
 @Controller('drug-ad')
@@ -56,7 +56,9 @@ export class DrugAdsController {
         const drug = clone(body)
         drug['drugAdImages'] = drugAdImages
         drug['pharmacyId'] = new ObjectIdType(pharmacyId)
-        console.log(drug)
+        if(!drug.availablePackageUnits && drug.availablePackages){
+            drug['availablePackageUnits'] = drug.packageUnits ? drug.availablePackages * drug.packageUnits : drug.availablePackages 
+        }
         return await this.drugAdService.create(drug);
     }
 
@@ -67,9 +69,9 @@ export class DrugAdsController {
             ? headers['accept-language']
             : 'multiLang');
         const pipelineConfig = aggregationPipelineConfig(lang)
-        const pipeline = aggregationMan(pipelineConfig, {})
+        const pipeline = aggregationMan(pipelineConfig, { _id: new ObjectIdType(id) })
         await this.drugAdService.approve(id);
-        return await this.drugAdService.aggregate(pipeline);
+        return (await this.drugAdService.aggregate(pipeline))[0];
     }
 
     @Get('reject/:id')
@@ -105,7 +107,15 @@ export class DrugAdsController {
             drugAdImages = files.drugAdImages.map((file: any) => {
                 return "drugAdImages/" + file.filename;
             })
-        const drug = pickBy(clone(body), identity);
+        const drug = pickBy(pick(clone(body),[
+            "packageUnits",
+            "expiryDate",
+            "availablePackages",
+            "availablePackageUnits",
+            "notes",
+            "drugAdImages",
+            "imagesToDelete"
+        ]), identity);
         drug['drugAdImages'] = drugAdImages
         drug['pharmacyId'] = new ObjectIdType(pharmacyId)
         drug['imagesToDelete'] = Array.isArray(drug.imagesToDelete) ? drug.imagesToDelete : (drug.imagesToDelete ? drug.imagesToDelete.split(',') : [])
@@ -128,7 +138,7 @@ export class DrugAdsController {
     @Delete(':id')
     @HttpCode(HttpStatus.OK)
     async delete(@Param('id') id: string) {
-        return this.drugAdService.deleteDrugAd(id);
+        return this.drugAdService.deactivate(id);
     }
 
     @Post("search")

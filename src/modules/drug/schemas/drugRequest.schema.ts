@@ -3,8 +3,8 @@ import { ObjectId } from 'mongodb';
 import * as mongoose from 'mongoose';
 const DrugRequestSchema: mongoose.Schema = new mongoose.Schema(
     {
-        drugId: {
-            type: String,
+        drugAdId: {
+            type: ObjectId,
             required: true
         },
         packages: {
@@ -41,14 +41,41 @@ const DrugRequestSchema: mongoose.Schema = new mongoose.Schema(
     },
 );
 export const aggregationPipelineConfig = (lang) => ([
-    {   
+    {
         "ref": "drug-ads",
         "lookupField": "_id",
-        "foriegnField": "drugId",
+        "foriegnField": "drugAdId",
         "langConfig": {
             "langField": "drug_name",
             "lang": lang
-        }
+        },
+        "innerLookup": [
+            {
+                "ref": "pharmacies",
+                "lookupField": "_id",
+                "foriegnField": "pharmacyId",
+                "innerLookup": [
+                    {
+                        "ref": "governorates",
+                        "lookupField": "_id",
+                        "foriegnField": "governorateId",
+                        "langConfig": {
+                            "langField": "governorate_name",
+                            "lang": lang
+                        }
+                    },
+                    {
+                        "ref": "cities",
+                        "lookupField": "_id",
+                        "foriegnField": "cityId",
+                        "langConfig": {
+                            "langField": "city_name",
+                            "lang": lang
+                        }
+                    }
+                ]
+            }
+        ]
     },
     {
         "ref": "pharmacies",

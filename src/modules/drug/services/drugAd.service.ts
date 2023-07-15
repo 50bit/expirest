@@ -11,6 +11,7 @@ import { aggregationMan } from 'src/common/utils/aggregationMan.utils';
 export class DrugAdService extends CrudService {
   constructor(
     @InjectModel('drug-ads') public readonly model: Model<any>,
+    @InjectModel('drug-requests') public readonly drugRequestModel: Model<any>,
   ) {
     super(model);
   }
@@ -32,7 +33,7 @@ export class DrugAdService extends CrudService {
       })
       return await this.model.deleteOne({ _id: id });
     } else {
-      return new HttpException(
+      throw new HttpException(
         'Drug ad is not found',
         HttpStatus.METHOD_NOT_ALLOWED,
       );
@@ -61,10 +62,23 @@ export class DrugAdService extends CrudService {
       const pipeline = aggregationMan(pipelineConfig, { _id: new ObjectIdType(id) })
       return (await this.model.aggregate(pipeline))[0];
     } else {
-      return new HttpException(
+      throw new HttpException(
         'Drug ad is not found',
         HttpStatus.METHOD_NOT_ALLOWED,
       );
     }
+  }
+
+  async deactivate(id){
+    const drugRequests = await this.drugRequestModel.find({drugAdId:new ObjectIdType(id)})
+    if(drugRequests && drugRequests.length){
+      for(const request of drugRequests){
+        await this.drugRequestModel.updateOne({ "_id": request._id }, { "$set": { "status": 'rejected' } })
+      }
+    }
+    if(!drugRequests || (drugRequests && drugRequests.length === 0)){
+      return await this.deleteDrugAd(id)
+    }
+    return await this.model.updateOne({ "_id": id }, { "$set": { "deactivated": true } })
   }
 }

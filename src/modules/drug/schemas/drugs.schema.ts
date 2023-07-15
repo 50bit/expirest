@@ -35,4 +35,5 @@ export const aggregationPipelineConfig = (lang) => ([
     }
 ])
 loadPlugins(DrugsSchema);
+DrugsSchema.index({"drug_name_en":"text","drug_name_ar":"text"})
 export { DrugsSchema };

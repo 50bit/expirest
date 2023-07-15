@@ -19,27 +19,66 @@ import { aggregationPipelineConfig } from 'src/modules/cart/schemas/cart.schema'
 import { aggregationMan } from 'src/common/utils/aggregationMan.utils';
 import { CartService } from '../services/cart.service';
 import { CrudController } from 'src/common/crud/controllers/crud.controller';
-
+import { AddItem } from '../interfaces/addItem.dto';
 @ApiTags('Cart')
 @Controller('cart')
 @ApiBearerAuth('access-token')
 @UseGuards(AuthGuard('jwt'))
-export class CartController extends CrudController{
+export class CartController {
     constructor(public readonly cartService: CartService) {
-        super(cartService)
     }
 
-    @Post('add-item')
+    @Get()
     @HttpCode(HttpStatus.OK)
     @ApiCreatedResponse({})
-    async addItemToCart(@Request() req: any, @Headers() headers, @Body() body: any) {
+    async getCart(@Request() req: any, @Headers() headers, @Body() body: AddItem) {
         body["userId"] = req.user.id;
-        await this.cartService.create(body)
+        body["pharmacyId"] = req.user.pharmacyId;
+        body["checkedOut"] = false
         const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
             ? headers['accept-language']
             : 'multiLang');
         const pipelineConfig = aggregationPipelineConfig(lang)
         const pipeline = aggregationMan(pipelineConfig, body)
         return await this.cartService.aggregate(pipeline);
+    }
+
+    @Get('checked-out-transactions')
+    @HttpCode(HttpStatus.OK)
+    @ApiCreatedResponse({})
+    async getCheckedOutTransactions(@Request() req: any, @Headers() headers, @Body() body: AddItem) {
+        body["pharmacyId"] = req.user.pharmacyId;
+        body["checkedOut"] = true
+        const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
+            ? headers['accept-language']
+            : 'multiLang');
+        const pipelineConfig = aggregationPipelineConfig(lang)
+        const pipeline = aggregationMan(pipelineConfig, body)
+        return await this.cartService.aggregate(pipeline);
+    }
+
+    @Post('add-item')
+    @HttpCode(HttpStatus.OK)
+    @ApiCreatedResponse({})
+    async addItemToCart(@Request() req: any, @Headers() headers, @Body() body: AddItem) {
+        body["userId"] = req.user.id;
+        body["checkedOut"] = false;
+        const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
+            ? headers['accept-language']
+            : 'multiLang');
+
+        return await this.cartService.addItemToCart(body, lang)
+    }
+
+    @Post('checkout')
+    @HttpCode(HttpStatus.OK)
+    @ApiCreatedResponse({})
+    async checkout(@Request() req: any, @Headers() headers) {
+        const { pharmacyId, id } = req.user;
+        const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
+            ? headers['accept-language']
+            : 'multiLang');
+
+        return await this.cartService.checkout(pharmacyId, id, lang)
     }
 }
