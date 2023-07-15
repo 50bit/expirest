@@ -55,6 +55,10 @@ const DrugAdSchema: mongoose.Schema = new mongoose.Schema(
         pharmacyId: {
             type: ObjectId,
             required: true
+        },
+        deactivated: {
+            type: Boolean,
+            default: false
         }
     },
     {

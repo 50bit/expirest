@@ -9,6 +9,8 @@ import { DrugAdsController } from './controllers/drugAd.controller';
 import { DrugRequestSchema } from './schemas/drugRequest.schema';
 import { DrugRequestService } from './services/drugRequest.service';
 import { DrugRequestController } from './controllers/drugRequest.controller';
+import { CartsSchema } from '../cart/schemas/cart.schema';
+import { CartModule } from '../cart/cart.module';
 
 @Module({
     controllers: [DrugController,DrugAdsController,DrugRequestController],
@@ -17,7 +19,8 @@ import { DrugRequestController } from './controllers/drugRequest.controller';
         MongooseModule.forFeature([
             { name: 'drugs', schema: DrugsSchema },
             { name: 'drug-ads', schema: DrugAdSchema },
-            { name: 'drug-requests', schema: DrugRequestSchema }
+            { name: 'drug-requests', schema: DrugRequestSchema },
+            { name: 'carts', schema: CartsSchema },
         ])
     ]
 })

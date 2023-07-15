@@ -75,7 +75,7 @@ export class UserController  {
       await this.usersService.update({ _id: id }, { $set: { ...body } });
       return await this.usersService.findOne({ _id: id });
     }
-    return new HttpException(
+    throw new HttpException(
       "You Can't Use This Email",
       HttpStatus.METHOD_NOT_ALLOWED,
     );

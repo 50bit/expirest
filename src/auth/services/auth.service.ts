@@ -83,7 +83,7 @@ export class AuthService {
     async login(body: any) {
         const user = await this.userModel.findOne({
             email: body.email,
-        }, { "password": 1, "email": 1, "fullName": 1, "activatedByEmail": 1, "approved": 1, "pharmacyId": 1 })
+        }, { "password": 1, "email": 1, "fullName": 1, "activatedByEmail": 1, "approved": 1, "pharmacyId": 1, "_id": 1 })
 
         if (!user) {
             throw new HttpException(
@@ -100,14 +100,31 @@ export class AuthService {
                 );
             } else {
                 if (!user.activatedByEmail) {
-                    return new HttpException(
-                        'Please activate your email before signing in.',
+                    const verficationCode = random(10000, 99999)
+                    try {
+                        await this.mailUtils.sendVerificationEmail(user.fullName, verficationCode, user.email)
+                        await this.userModel.updateOne({ _id: user._id }, { "$set": { "verficationCode": verficationCode } })
+                    } catch (error) {
+                        console.log(error)
+                        throw new HttpException(
+                            'Email is not valid or can\'t be reached',
+                            HttpStatus.METHOD_NOT_ALLOWED,
+                        );
+                    }
+                    throw new HttpException(
+                        {
+                            message: 'Please activate your email before signing in.\n A new verification code has been sent to your email',
+                            data: {
+                                userId: user._id,
+                                email: user.email
+                            }
+                        },
                         HttpStatus.METHOD_NOT_ALLOWED,
                     );
                 }
                 if (!user.approved) {
-                    return new HttpException(
-                        'Your account is not approved yet.',
+                    throw new HttpException(
+                        'Your account is not approved by the adminsitration yet.',
                         HttpStatus.METHOD_NOT_ALLOWED,
                     );
                 }
@@ -176,7 +193,7 @@ export class AuthService {
             name: pharmacy.name
         });
         if (pharmacyExists)
-            return new HttpException(
+            throw new HttpException(
                 'Pharmacy already exists, please contact the administration',
                 HttpStatus.METHOD_NOT_ALLOWED,
             );
@@ -186,7 +203,7 @@ export class AuthService {
         });
 
         if (userExists)
-            return new HttpException(
+            throw new HttpException(
                 'User already exists, please contact the administration',
                 HttpStatus.METHOD_NOT_ALLOWED,
             );
@@ -196,7 +213,7 @@ export class AuthService {
             await this.mailUtils.sendVerificationEmail(user.fullName, verficationCode, user.email)
         } catch (error) {
             console.log(error)
-            return new HttpException(
+            throw new HttpException(
                 'Email is not valid or can\'t be reached',
                 HttpStatus.METHOD_NOT_ALLOWED,
             );
@@ -223,14 +240,14 @@ export class AuthService {
             return updatedUser
         }
 
-        return new HttpException(
+        throw new HttpException(
             'Please make sure you are using a valid verification code',
             HttpStatus.METHOD_NOT_ALLOWED,
         );
     }
 
     async approve(id) {
-        const user = await this.userModel.findOne({ "_id": id})
+        const user = await this.userModel.findOne({ "_id": id })
         if (user) {
             await this.userModel.updateOne({ "_id": id }, { "$set": { "approved": true } })
             let updatedUser = JSON.parse(JSON.stringify(user))
@@ -238,9 +255,33 @@ export class AuthService {
             return updatedUser
         }
 
-        return new HttpException(
+        throw new HttpException(
             'Please make sure the user exists',
             HttpStatus.METHOD_NOT_ALLOWED,
         );
+    }
+
+    async sendVerificationCode(id) {
+        const user = await this.userModel.findOne({ _id: id })
+        if (user) {
+            const verficationCode = random(10000, 99999)
+            try {
+                await this.mailUtils.sendVerificationEmail(user.fullName, verficationCode, user.email)
+                await this.userModel.updateOne({ _id: user._id }, { "$set": { "verficationCode": verficationCode } })
+                return user
+            } catch (error) {
+                console.log(error)
+                throw new HttpException(
+                    'Email is not valid or can\'t be reached',
+                    HttpStatus.METHOD_NOT_ALLOWED,
+                );
+            }
+        } else {
+            throw new HttpException(
+                'Please make sure the user exists',
+                HttpStatus.METHOD_NOT_ALLOWED,
+            );
+        }
+
     }
 }

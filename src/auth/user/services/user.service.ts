@@ -25,7 +25,7 @@ export class UserService extends CrudService {
       email: body.email
     });
     if (userExists)
-      return new HttpException(
+      throw new HttpException(
         'User already exists, please contact the administration',
         HttpStatus.METHOD_NOT_ALLOWED,
       );
@@ -38,7 +38,7 @@ export class UserService extends CrudService {
       return user
     } catch (error) {
       console.log(error)
-      return new HttpException(
+      throw new HttpException(
         'Email is not valid or can\'t be reached',
         HttpStatus.METHOD_NOT_ALLOWED,
       );
@@ -50,9 +50,10 @@ export class UserService extends CrudService {
     try {
       await this.userModel.updateOne({ email: body.email }, { "$set": { verficationCode } })
       await this.mailUtils.sendVerificationEmail('', verficationCode, body.email, true)
+      return await this.userModel.findOne({ email: body.email })
     } catch (error) {
       console.log(error)
-      return new HttpException(
+      throw new HttpException(
         'Email is not valid or can\'t be reached',
         HttpStatus.METHOD_NOT_ALLOWED,
       );

@@ -63,7 +63,7 @@ export class CrudService {
 
       return { docs: items, totalDocs };
     } catch (e) {
-      return new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 

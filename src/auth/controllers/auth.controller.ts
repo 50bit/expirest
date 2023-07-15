@@ -25,7 +25,7 @@ export class AuthController {
     if (req.user) {
       return { status: 200, message: 'Authorized' };
     } else {
-      return new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
     }
   }
 
@@ -90,6 +90,13 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async verify(@Param('id') id: string, @Param('verficationCode') verficationCode: string) {
     return await this.authService.verify(id, verficationCode);
+  }
+
+  @Post('send-verification-code/:id')
+  @ApiCreatedResponse({})
+  @HttpCode(HttpStatus.OK)
+  async sendVerificationCode(@Param('id') id: string) {
+    return await this.authService.sendVerificationCode(id);
   }
 
   @Post('admin-register')

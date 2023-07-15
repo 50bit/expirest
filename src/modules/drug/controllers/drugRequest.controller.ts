@@ -19,12 +19,14 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
-import { aggregationPipelineConfig } from 'src/modules/drug/schemas/drugs.schema';
 import { aggregationMan } from 'src/common/utils/aggregationMan.utils';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { DrugRequestService } from '../services/drugRequest.service';
 import { ObjectIdType } from 'src/common/utils/db.utils';
+import { DrugRequest } from '../interfaces/drugRequest.dto';
+import { DrugRequestUpdate } from '../interfaces/drugRequestUpdate.dto';
+import { aggregationPipelineConfig } from '../schemas/drugRequest.schema';
 
 @ApiTags('Drug Request')
 @Controller('drug-request')
@@ -34,12 +36,26 @@ export class DrugRequestController {
     constructor(public readonly drugRequestService: DrugRequestService) {
     }
 
-    @Post('')
+    @Post()
     @HttpCode(HttpStatus.OK)
-    async create(@Request() req: any,@Body() body: any) {
+    async create(@Request() req: any,@Body() body: DrugRequest,@Headers() headers) {
         const pharmacyId = req.user.pharmacyId
         body['pharmacyId'] = new ObjectIdType(pharmacyId)
-        return await this.drugRequestService.create(body);
+        const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
+        ? headers['accept-language']
+        : 'multiLang');
+        return await this.drugRequestService.createRequest(body,lang);
+    }
+
+    @Put(':id')
+    @HttpCode(HttpStatus.OK)
+    async updateDrugRequest(@Request() req: any,@Body() body: DrugRequestUpdate,@Headers() headers,@Param('id') id: string) {
+        const pharmacyId = req.user.pharmacyId
+        body['pharmacyId'] = new ObjectIdType(pharmacyId)
+        const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
+        ? headers['accept-language']
+        : 'multiLang');
+        return await this.drugRequestService.updateDrugRequest(id,body,lang);
     }
 
     @Get('approve/:id')
@@ -48,10 +64,8 @@ export class DrugRequestController {
         const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
             ? headers['accept-language']
             : 'multiLang');
-        const pipelineConfig = aggregationPipelineConfig(lang)
-        const pipeline = aggregationMan(pipelineConfig, {})
-        await this.drugRequestService.approve(id);
-        return await this.drugRequestService.aggregate(pipeline);
+
+        return this.drugRequestService.approve(id,lang)
     }
 
     @Get('reject/:id')
@@ -63,7 +77,7 @@ export class DrugRequestController {
         const pipelineConfig = aggregationPipelineConfig(lang)
         const pipeline = aggregationMan(pipelineConfig, {})
         await this.drugRequestService.reject(id);
-        return await this.drugRequestService.aggregate(pipeline);
+        return (await this.drugRequestService.aggregate(pipeline))[0] || {};
     }
 
     @Get()
@@ -93,8 +107,11 @@ export class DrugRequestController {
 
     @Delete(':id')
     @HttpCode(HttpStatus.OK)
-    async delete(@Param('id') id: string) {
-        return await this.drugRequestService.delete(id);
+    async delete(@Headers() headers,@Param('id') id: string) {
+        const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
+            ? headers['accept-language']
+            : 'multiLang');
+        return await this.drugRequestService.deleteDrugRequest(id,lang);
     }
 
     @Post("search")
