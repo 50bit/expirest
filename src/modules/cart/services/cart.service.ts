@@ -52,7 +52,6 @@ export class CartService extends CrudService {
         const currentItemGovernorateId = get(item.pharmacyId, "governorateId.id", undefined)
         if (currentItemGovernorateId && (pharmacyGovernorateId == currentItemGovernorateId)) {
           const drugRequest = item.drugRequestId 
-          console.log(item)
 
           const drugAd = drugRequest.drugAdId 
           const requestPackages = drugRequest.packages;

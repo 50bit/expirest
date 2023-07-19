@@ -46,11 +46,20 @@ export class DrugRequestService extends CrudService {
   }
 
   async approve(id, lang) {
-    await this.model.updateOne({ "_id": new ObjectIdType(id) }, { "$set": { "status": 'approved' } })
-    const pipelineConfig = aggregationPipelineConfig(lang)
-    const pipeline = aggregationMan(pipelineConfig, { "_id": new ObjectIdType(id) })
-    const drugRequest = (await this.model.aggregate(pipeline))[0] || {};
-    return drugRequest
+    const drugRequest = await this.model.findOne({"_id": new ObjectIdType(id)})
+    const drugAd = await this.drugAdsModel.findOne({_id:new ObjectIdType(drugRequest.drugAdId)})
+    if(drugAd.availablePackages >= drugRequest.packages && drugAd.availablePackageUnits >= drugRequest.packageUnits){
+      await this.model.updateOne({ "_id": new ObjectIdType(id) }, { "$set": { "status": 'approved' } })
+      const pipelineConfig = aggregationPipelineConfig(lang)
+      const pipeline = aggregationMan(pipelineConfig, { "_id": new ObjectIdType(id) })
+      const drugRequest = (await this.model.aggregate(pipeline))[0] || {};
+      return drugRequest
+    }else{
+      throw new HttpException(
+        `Packages should be less than or equal ${drugAd.availablePackages} and package units should be less than or equal ${drugAd.availablePackageUnits}`,
+        HttpStatus.METHOD_NOT_ALLOWED,
+      );
+    }
   }
 
   async reject(id) {
