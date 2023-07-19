@@ -34,8 +34,11 @@ export class AuthController {
     type: Login,
   })
   @HttpCode(HttpStatus.OK)
-  async login(@Body() body: Auth) {
-    return await this.authService.login(body);
+  async login(@Body() body: Auth,@Headers() headers) {
+    const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
+    ? headers['accept-language']
+    : 'multiLang');
+    return await this.authService.login(body,lang);
   }
 
   @Post('user-register')

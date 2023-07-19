@@ -8,6 +8,7 @@ import { random } from 'lodash';
 import { aggregationPipelineConfig } from '../user/schemas/user.schema';
 import { aggregationMan } from 'src/common/utils/aggregationMan.utils';
 import { ObjectIdType } from 'src/common/utils/db.utils';
+import { aggregationPipelineConfig as  pharmacyAggregationPipelineConfig } from 'src/modules/pharmacy/schemas/pharmacy.schema';
 @Injectable()
 export class AuthService {
     constructor(
@@ -80,7 +81,7 @@ export class AuthService {
         }
     }
 
-    async login(body: any) {
+    async login(body: any,lang:string) {
         const user = await this.userModel.findOne({
             email: body.email,
         }, { "password": 1, "email": 1, "fullName": 1, "activatedByEmail": 1, "approved": 1, "pharmacyId": 1, "_id": 1 })
@@ -128,9 +129,13 @@ export class AuthService {
                         HttpStatus.METHOD_NOT_ALLOWED,
                     );
                 }
+                const pipelineConfig = pharmacyAggregationPipelineConfig(lang)
+                const pipeline = aggregationMan(pipelineConfig, {_id:new ObjectIdType(user.pharmacyId)})
+                const pharmacy = (await this.pharmacyModel.aggregate(pipeline))[0].name
                 return await {
                     fullName: user.fullName,
                     isAdmin: user.isAdmin,
+                    pharmacy,
                     token: await this.generateToken({
                         id: user._id,
                         fullName: user.fullName,
