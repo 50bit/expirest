@@ -107,4 +107,10 @@ export const aggregationPipelineConfig = (lang) => ([
     }
 ])
 loadPlugins(CartsSchema);
+CartsSchema.index( {createdAt: 1}, {
+    expireAfterSeconds: 172800, // 2 days = 
+    partialFilterExpression: {
+        checkedOut: false
+    }
+});
 export { CartsSchema };

@@ -1,4 +1,4 @@
-import { zipObject, forEach, map, flatten } from 'lodash'
+import { zipObject, forEach, map, flatten, isEmpty } from 'lodash'
 const LANG = ["ar", "en"]
 
 export const langPipeline = (langConfig) => {
@@ -20,8 +20,16 @@ export const langPipeline = (langConfig) => {
     ]
 };
 
-export const aggregationMan = (aggregation, query) => {
+export const aggregationMan = (aggregation, query, options={}) => {
     if (aggregation.length <= 0) return []
+    let opt = []
+    if(!isEmpty(options)){
+        opt = map(options,(value,key)=>{
+            const temp = {}
+            temp[key] = value
+            return temp
+        })
+    }
     let fullPipeline: any = [
         {
             $match: query,
@@ -30,7 +38,7 @@ export const aggregationMan = (aggregation, query) => {
     forEach(aggregation, (lookupConfig) => {
         fullPipeline = [...fullPipeline, ...lookupBuilder(lookupConfig)]
     })
-    return fullPipeline;
+    return [...fullPipeline,...opt];
 }
 
 export const buildProjection = (lookupConfig) => {
