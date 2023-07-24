@@ -27,7 +27,8 @@ import { ObjectIdType } from 'src/common/utils/db.utils';
 import { DrugRequest } from '../interfaces/drugRequest.dto';
 import { DrugRequestUpdate } from '../interfaces/drugRequestUpdate.dto';
 import { aggregationPipelineConfig } from '../schemas/drugRequest.schema';
-
+import { searchBody } from 'src/common/crud/interfaces/searchBody.dto';
+import { clone } from 'lodash'
 @ApiTags('Drug Request')
 @Controller('drug-request')
 @ApiBearerAuth('access-token')
@@ -116,12 +117,14 @@ export class DrugRequestController {
 
     @Post("search")
     @HttpCode(HttpStatus.OK)
-    async searchDrugAds(@Request() req: any, @Headers() headers, @Body() body: any) {
+    async searchDrugAds(@Request() req: any, @Headers() headers, @Body() body: searchBody) {
         const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
             ? headers['accept-language']
             : 'multiLang');
+
+        const {search,options} = clone(body)
         const pipelineConfig = aggregationPipelineConfig(lang)
-        const pipeline = aggregationMan(pipelineConfig, body)
+        const pipeline = aggregationMan(pipelineConfig, body,options)
         return await this.drugRequestService.aggregate(pipeline);
     }
 }

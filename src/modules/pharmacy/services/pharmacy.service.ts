@@ -42,7 +42,6 @@ export class PharmacyService extends CrudService {
     const pharamacy = await this.model.findOne({
       _id
     })
-    console.log(_id)
     if(pharamacy){
       await this.model.updateOne(
         { _id },
@@ -56,7 +55,6 @@ export class PharmacyService extends CrudService {
     const users = await this.usersModel.find({
       "pharmacyId":_id
     })
-    console.log(users.length)
     if(users.length){
       await this.usersModel.updateMany(
         {"pharmacyId":_id},

@@ -14,7 +14,7 @@ const DrugAdSchema: mongoose.Schema = new mongoose.Schema(
         packageUnits: {
             type: Number,
             required: false,
-            default: 1
+            default: null
         },
         expiryDate: {
             type: Number,
@@ -27,7 +27,7 @@ const DrugAdSchema: mongoose.Schema = new mongoose.Schema(
         availablePackageUnits: {
             type: Number,
             required: false,
-            default: 1
+            default: null
         },
         priceOnPackage: {
             type: Number,

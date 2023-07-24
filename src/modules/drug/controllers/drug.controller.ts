@@ -12,6 +12,7 @@ import {
   Query,
   HttpCode,
   Headers,
+  Delete,
 } from '@nestjs/common';
 import { DrugService } from '../services/drug.service';
 import { ApiBearerAuth, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
@@ -57,13 +58,21 @@ export class DrugController {
       : 'multiLang');
     const search = clone(body)
     // let searchOptions = {"$text":{"$search":search.keyword}}
-    let searchOptions ={$or: [
-      { "drug_name_en": new RegExp(search.keyword, "gi") },
-      { "drug_name_ar": new RegExp(search.keyword, "gi") },
-    ]}
+    let searchOptions = {
+      $or: [
+        { "drug_name_en": new RegExp(search.keyword, "gi") },
+        { "drug_name_ar": new RegExp(search.keyword, "gi") },
+      ]
+    }
     const pipelineConfig = aggregationPipelineConfig(lang)
     let pipeline = aggregationMan(pipelineConfig, searchOptions)
-    pipeline = [...pipeline,{ "$limit": 1000 }]
+    pipeline = [...pipeline, { "$limit": 1000 }]
     return await this.drugsService.aggregate(pipeline);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.OK)
+  async delete(@Param('id') id: string) {
+    return await this.drugsService.deleteOne(id);
   }
 }

@@ -25,6 +25,10 @@ export class DrugRequestService extends CrudService {
       delete drugAd._id
       drugRequestBody['drugAdId'] = drugAd
       drugRequestBody['status'] = 'pending'
+      if(!drugRequestBody.packageUnits && isNaN(parseInt(drugRequestBody.packageUnits)))
+        drugRequestBody['packageUnits'] = null
+      if(!drugRequestBody.packages && isNaN(parseInt(drugRequestBody.packages)))
+        drugRequestBody['packages'] = null
       const drugRequest = await this.model.create(drugRequestBody)
       const pipelineConfig = aggregationPipelineConfig(lang)
       const pipeline = aggregationMan(pipelineConfig, { _id: new ObjectIdType(drugRequest._id) })
@@ -75,7 +79,6 @@ export class DrugRequestService extends CrudService {
         HttpStatus.OK,
       );
     } catch (error) {
-      console.log(error)
       throw new HttpException(
         'Something happened while deleting',
         HttpStatus.METHOD_NOT_ALLOWED,

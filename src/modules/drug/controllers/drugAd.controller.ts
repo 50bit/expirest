@@ -29,6 +29,7 @@ import fs from 'fs';
 import { DrugAd } from '../interfaces/drugAd.dto';
 import { clone, forEach, pickBy, identity, map, pick } from 'lodash';
 import { UpdateDrugAd } from '../interfaces/updateDrugAd.dto';
+import { searchBody } from 'src/common/crud/interfaces/searchBody.dto';
 @ApiTags('Drug Ad')
 @Controller('drug-ad')
 @ApiBearerAuth('access-token')
@@ -79,8 +80,25 @@ export class DrugAdsController {
         const drug = clone(body)
         drug['drugAdImages'] = drugAdImages
         drug['pharmacyId'] = new ObjectIdType(pharmacyId)
-        if(!drug.availablePackageUnits && drug.availablePackages){
-            drug['availablePackageUnits'] = drug.packageUnits ? drug.availablePackages * drug.packageUnits : drug.availablePackages 
+        if (drug.packageUnits >= 0 && !isNaN(parseInt(drug.packageUnits)) && drug.availablePackageUnits >= 0 && !isNaN(parseInt(drug.availablePackageUnits)) && drug.availablePackages >= 0 && !isNaN(parseInt(drug.availablePackages))) {
+            if ((drug.availablePackageUnits / drug.packageUnits) > drug.availablePackages)
+                throw new HttpException(
+                    `Available package units should be less than or equal to ${drug.availablePackages * drug.packageUnits}`,
+                    HttpStatus.METHOD_NOT_ALLOWED,
+                );
+        }
+        if (!drug.availablePackageUnits && isNaN(parseInt(drug.availablePackageUnits)) && drug.availablePackages && drug.packageUnits) {
+            drug['availablePackageUnits'] = drug.packageUnits ? drug.availablePackages * drug.packageUnits : drug.availablePackages
+        }
+        if (!drug.packageUnits && isNaN(parseInt(drug.packageUnits)) && drug.availablePackageUnits >= 0 && !isNaN(parseInt(drug.availablePackageUnits))) {
+            throw new HttpException(
+                'Please identify the package units if you are going to work with units',
+                HttpStatus.METHOD_NOT_ALLOWED,
+            );
+        }
+        if (isNaN(parseInt(drug.packageUnits)) && isNaN(parseInt(drug.availablePackageUnits))) {
+            drug['availablePackageUnits'] = null
+            drug['packageUnits'] = null
         }
         return await this.drugAdService.create(drug);
     }
@@ -153,7 +171,7 @@ export class DrugAdsController {
             drugAdImages = files.drugAdImages.map((file: any) => {
                 return "drugAdImages/" + file.filename;
             })
-        const drug = pickBy(pick(clone(body),[
+        const drug = pickBy(pick(clone(body), [
             "packageUnits",
             "expiryDate",
             "availablePackages",
@@ -189,15 +207,23 @@ export class DrugAdsController {
 
     @Post("search")
     @HttpCode(HttpStatus.OK)
-    async searchDrugAds(@Request() req: any, @Headers() headers, @Body() body: any) {
+    async searchDrugAds(@Request() req: any, @Headers() headers, @Body() body: searchBody) {
         const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
             ? headers['accept-language']
             : 'multiLang');
-        const search = clone(body)
-        if(search.pharmacyId)
-            search["pharmacyId"] =  new ObjectIdType(search.pharmacyId)
+        const { search, options } = clone(body)
+        if (search.pharmacyId)
+            search["pharmacyId"] = new ObjectIdType(search.pharmacyId)
+        if (search.name) {
+            search["$or"] = [
+                { "drug_name_en": new RegExp(search.name, "gi") },
+                { "drug_name_ar": new RegExp(search.name, "gi") },
+            ]
+            delete search.name
+        }
+
         const pipelineConfig = aggregationPipelineConfig(lang)
-        const pipeline = aggregationMan(pipelineConfig, search)
+        const pipeline = aggregationMan(pipelineConfig, search, options)
         return await this.drugAdService.aggregate(pipeline);
     }
 }
