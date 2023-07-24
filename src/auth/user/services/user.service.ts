@@ -37,7 +37,6 @@ export class UserService extends CrudService {
       await this.mailUtils.sendVerificationEmail('', verficationCode, body.email, false)
       return user
     } catch (error) {
-      console.log(error)
       throw new HttpException(
         'Email is not valid or can\'t be reached',
         HttpStatus.METHOD_NOT_ALLOWED,
@@ -52,7 +51,6 @@ export class UserService extends CrudService {
       await this.mailUtils.sendVerificationEmail('', verficationCode, body.email, true)
       return await this.userModel.findOne({ email: body.email })
     } catch (error) {
-      console.log(error)
       throw new HttpException(
         'Email is not valid or can\'t be reached',
         HttpStatus.METHOD_NOT_ALLOWED,

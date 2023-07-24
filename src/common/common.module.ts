@@ -54,7 +54,7 @@ export class CommonModule {
 
   addDrugs() {
     const DRUGS = []
-    const csvPath = path.join(__dirname.replace("/dist", "/src"), '/data/Drugs-5-2023Dbase.csv');
+    const csvPath = path.join(__dirname.replace("/dist", "/src"), '/data/Drugs-7-2023Dbase.csv');
     fs.createReadStream(csvPath)
       .pipe(csvParser({ separator: ',' }))
       .on('data', (data) => {

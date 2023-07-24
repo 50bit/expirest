@@ -15,6 +15,7 @@ export class CartService extends CrudService {
     @InjectModel('carts') public readonly model: Model<any>,
     @InjectModel('pharmacies') public readonly pharmacyModel: Model<any>,
     @InjectModel('drug-requests') public readonly drugRequestModel: Model<any>,
+    @InjectModel('drug-ads') public readonly drugAdsModel: Model<any>,
   ) {
     super(model);
   }
@@ -74,6 +75,7 @@ export class CartService extends CrudService {
       if (cartTotal > 0 && errors.length === 0) {
         for (const item of cartItems) {
           await this.model.updateOne({ _id: item._id }, { "$set": { "checkedOut": true } })
+          await this.updateDrugAdStock(item.drugRequestId)
         }
         throw new HttpException(
           'All transaction has been correctly procceeded, Thank you for using Expirest ',
@@ -91,5 +93,40 @@ export class CartService extends CrudService {
         HttpStatus.OK,
       );
     }
+  }
+
+  async updateDrugAdStock(id){
+    const drugRequestPipelineConfig = drugRequestAggregationPipelineConfig("multiLang")
+    const drugRequestPipeline = aggregationMan(drugRequestPipelineConfig, { "_id": new ObjectIdType(id) })
+    const drugRequest = (await this.drugRequestModel.aggregate(drugRequestPipeline))[0];
+    if(drugRequest && drugRequest.drugAdId){
+      //request with packages and packageUnits
+      if(drugRequest.packages >= 0 && drugRequest.packageUnits >= 0 && drugRequest.drugAdId._id){
+        const newAvailablePackages = drugRequest.drugAdId.availablePackages - drugRequest.packages
+        const newAvailablePackageUnits = drugRequest.drugAdId.availablePackageUnits - drugRequest.packageUnits
+        return await this.drugAdsModel.updateOne({_id:drugRequest.drugAdId._id},{"$set":{"availablePackages":newAvailablePackages,"availablePackageUnits":newAvailablePackageUnits}})
+      }
+      //request with packages only
+      else if (drugRequest.packages >=0 && drugRequest.packageUnits == null && drugRequest.drugAdId.packageUnits){
+        const newAvailablePackages = drugRequest.drugAdId.availablePackages - drugRequest.packages
+        const newAvailablePackageUnits = drugRequest.drugAdId.availablePackageUnits - (newAvailablePackages * drugRequest.drugAdId.packageUnits)
+        return await this.drugAdsModel.updateOne({_id:drugRequest.drugAdId._id},{"$set":{"availablePackages":newAvailablePackages,"availablePackageUnits":newAvailablePackageUnits}})
+      }
+      //request with packageUnits only
+      else if (drugRequest.packageUnits >=0 && drugRequest.packages == null && drugRequest.drugAdId.packageUnits){
+        //if request packageUnits is larger than the packageUnits of the ad itself 
+        //then calculate the new packages
+        if(drugRequest.drugAdId.packageUnits <= drugRequest.packageUnits){
+          const remainingPackageUnits = drugRequest.packageUnits % drugRequest.drugAdId.packageUnits
+          const totalPackages = (drugRequest.packageUnits - remainingPackageUnits) / drugRequest.drugAdId.packageUnits
+          const newAvailablePackages = drugRequest.drugAdId.availablePackages - totalPackages
+          const newAvailablePackageUnits = drugRequest.drugAdId.availablePackageUnits - remainingPackageUnits
+          return await this.drugAdsModel.updateOne({_id:drugRequest.drugAdId._id},{"$set":{"availablePackages":newAvailablePackages,"availablePackageUnits":newAvailablePackageUnits}})
+        }else{
+          const newAvailablePackageUnits = drugRequest.drugAdId.availablePackageUnits - drugRequest.packageUnits
+          return await this.drugAdsModel.updateOne({_id:drugRequest.drugAdId._id},{"$set":{"availablePackageUnits":newAvailablePackageUnits}})
+        }
+      }
+    }else return 
   }
 }

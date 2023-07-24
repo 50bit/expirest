@@ -106,7 +106,6 @@ export class AuthService {
                         await this.mailUtils.sendVerificationEmail(user.fullName, verficationCode, user.email)
                         await this.userModel.updateOne({ _id: user._id }, { "$set": { "verficationCode": verficationCode } })
                     } catch (error) {
-                        console.log(error)
                         throw new HttpException(
                             'Email is not valid or can\'t be reached',
                             HttpStatus.METHOD_NOT_ALLOWED,
@@ -217,7 +216,6 @@ export class AuthService {
         try {
             await this.mailUtils.sendVerificationEmail(user.fullName, verficationCode, user.email)
         } catch (error) {
-            console.log(error)
             throw new HttpException(
                 'Email is not valid or can\'t be reached',
                 HttpStatus.METHOD_NOT_ALLOWED,
@@ -275,7 +273,6 @@ export class AuthService {
                 await this.userModel.updateOne({ _id: user._id }, { "$set": { "verficationCode": verficationCode } })
                 return user
             } catch (error) {
-                console.log(error)
                 throw new HttpException(
                     'Email is not valid or can\'t be reached',
                     HttpStatus.METHOD_NOT_ALLOWED,
