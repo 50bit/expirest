@@ -31,10 +31,12 @@ export class CartController {
     @Get()
     @HttpCode(HttpStatus.OK)
     @ApiCreatedResponse({})
-    async getCart(@Request() req: any, @Headers() headers, @Body() body: AddItem) {
-        body["userId"] = req.user.id;
-        body["pharmacyId"] = req.user.pharmacyId;
-        body["checkedOut"] = false
+    async getCart(@Request() req: any, @Headers() headers) {
+        const body = {
+            userId: req.user.id,
+            pharmacyId: req.user.pharmacyId,
+            checkedOut: false
+        }
         const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
             ? headers['accept-language']
             : 'multiLang');
@@ -46,9 +48,11 @@ export class CartController {
     @Get('checked-out-transactions')
     @HttpCode(HttpStatus.OK)
     @ApiCreatedResponse({})
-    async getCheckedOutTransactions(@Request() req: any, @Headers() headers, @Body() body: AddItem) {
-        body["pharmacyId"] = req.user.pharmacyId;
-        body["checkedOut"] = true
+    async getCheckedOutTransactions(@Request() req: any, @Headers() headers) {
+        const body = {
+            pharmacyId: req.user.pharmacyId,
+            checkedOut: true
+        }
         const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
             ? headers['accept-language']
             : 'multiLang');
@@ -62,6 +66,7 @@ export class CartController {
     @ApiCreatedResponse({})
     async addItemToCart(@Request() req: any, @Headers() headers, @Body() body: AddItem) {
         body["userId"] = req.user.id;
+        body["pharmacyId"] = req.user.pharmacyId;
         body["checkedOut"] = false;
         const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
             ? headers['accept-language']

@@ -26,7 +26,11 @@ const PharmacySchema: mongoose.Schema = new mongoose.Schema(
         },
         pharmacyLiscence: {
             type: String
-        }
+        },
+        active:{
+          type: Boolean,
+          default: true,
+        },
     },
     {
         timestamps: true,

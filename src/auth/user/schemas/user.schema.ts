@@ -48,7 +48,11 @@ const UserSchema = new mongoose.Schema(
     verficationCode:{
       type: Number,
       default: null
-    }
+    },
+    active:{
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true
