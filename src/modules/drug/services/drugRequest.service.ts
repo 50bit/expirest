@@ -17,17 +17,25 @@ export class DrugRequestService extends CrudService {
   }
 
   async createRequest(body, lang) {
-    // TODO: disable requesting from your own pharmacy
+    // TESTIT: disable requesting from your own pharmacy
     const { drugAdId } = body
+    const isOurDrugAd = await this.drugAdsModel.findOne({ _id: new ObjectIdType(drugAdId), pharmacyId: new ObjectIdType(body.pharmacyId) })
+    if (isOurDrugAd) {
+      throw new HttpException(
+        'You can\'t request from your own pharmacy',
+        HttpStatus.METHOD_NOT_ALLOWED,
+      );
+    }
+
     const drugAd = await this.drugAdsModel.findOne({ _id: new ObjectIdType(drugAdId) })
     if (drugAd) {
       const drugRequestBody = clone(body)
       delete drugAd._id
       drugRequestBody['drugAdId'] = drugAd
       drugRequestBody['status'] = 'pending'
-      if(!drugRequestBody.packageUnits && isNaN(parseInt(drugRequestBody.packageUnits)))
+      if (!drugRequestBody.packageUnits && isNaN(parseInt(drugRequestBody.packageUnits)))
         drugRequestBody['packageUnits'] = null
-      if(!drugRequestBody.packages && isNaN(parseInt(drugRequestBody.packages)))
+      if (!drugRequestBody.packages && isNaN(parseInt(drugRequestBody.packages)))
         drugRequestBody['packages'] = null
       const drugRequest = await this.model.create(drugRequestBody)
       const pipelineConfig = aggregationPipelineConfig(lang)
@@ -50,15 +58,15 @@ export class DrugRequestService extends CrudService {
   }
 
   async approve(id, lang) {
-    const drugRequest = await this.model.findOne({"_id": new ObjectIdType(id)})
-    const drugAd = await this.drugAdsModel.findOne({_id:new ObjectIdType(drugRequest.drugAdId)})
-    if(drugAd.availablePackages >= drugRequest.packages && drugAd.availablePackageUnits >= drugRequest.packageUnits){
+    const drugRequest = await this.model.findOne({ "_id": new ObjectIdType(id) })
+    const drugAd = await this.drugAdsModel.findOne({ _id: new ObjectIdType(drugRequest.drugAdId) })
+    if (drugAd.availablePackages >= drugRequest.packages && drugAd.availablePackageUnits >= drugRequest.packageUnits) {
       await this.model.updateOne({ "_id": new ObjectIdType(id) }, { "$set": { "status": 'approved' } })
       const pipelineConfig = aggregationPipelineConfig(lang)
       const pipeline = aggregationMan(pipelineConfig, { "_id": new ObjectIdType(id) })
       const drugRequest = (await this.model.aggregate(pipeline))[0] || {};
       return drugRequest
-    }else{
+    } else {
       throw new HttpException(
         `Packages should be less than or equal ${drugAd.availablePackages} and package units should be less than or equal ${drugAd.availablePackageUnits}`,
         HttpStatus.METHOD_NOT_ALLOWED,
