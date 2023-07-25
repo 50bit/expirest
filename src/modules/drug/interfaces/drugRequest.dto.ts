@@ -1,6 +1,7 @@
 import { IsBoolean, IsNumber, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
+import { Optional } from '@nestjs/common';
 
 export class DrugRequest {
     @IsString()
@@ -15,6 +16,7 @@ export class DrugRequest {
     @IsNumber()
     @ApiProperty({type:Number,required:false})
     @Type(() => Number)
+    @Optional()
     packageUnits: Number
 
     @IsNumber()

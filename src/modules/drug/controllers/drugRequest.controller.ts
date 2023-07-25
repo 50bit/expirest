@@ -28,7 +28,7 @@ import { DrugRequest } from '../interfaces/drugRequest.dto';
 import { DrugRequestUpdate } from '../interfaces/drugRequestUpdate.dto';
 import { aggregationPipelineConfig } from '../schemas/drugRequest.schema';
 import { searchBody } from 'src/common/crud/interfaces/searchBody.dto';
-import { clone } from 'lodash'
+import { clone, findIndex,get } from 'lodash'
 @ApiTags('Drug Request')
 @Controller('drug-request')
 @ApiBearerAuth('access-token')
@@ -123,8 +123,29 @@ export class DrugRequestController {
             : 'multiLang');
 
         const {search,options} = clone(body)
+        const pharmacyId = req.user.pharmacyId
+        if(search.sent){
+            search['pharmacyId'] = new ObjectIdType(pharmacyId)
+            delete search.sent
+        }
+
         const pipelineConfig = aggregationPipelineConfig(lang)
-        const pipeline = aggregationMan(pipelineConfig, body,options)
+        const pipeline = aggregationMan(pipelineConfig, search,options)
+        if(search.recieved){
+            const pharmacyId = req.user.pharmacyId
+            
+            const drugAdLookupIndex = findIndex((pipeline),(lookup)=>{
+                return lookup.$lookup && lookup.$lookup.from === 'drug-ads'
+            })
+            if(drugAdLookupIndex >= 0){
+                const pipelineCopy = clone(pipeline)
+                if(get(pipelineCopy[drugAdLookupIndex],'$lookup.pipeline[0].$match.$expr.$and')){
+                    pipelineCopy[drugAdLookupIndex].$lookup.pipeline[0].$match.$expr.$and.push({pharmacyId : new ObjectIdType(pharmacyId)})
+                    delete search.recieved
+                    return await this.drugRequestService.aggregate(pipelineCopy);
+                }
+            }
+        }
         return await this.drugRequestService.aggregate(pipeline);
     }
 }
