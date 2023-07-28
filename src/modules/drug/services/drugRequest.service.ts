@@ -49,6 +49,54 @@ export class DrugRequestService extends CrudService {
     }
   }
 
+  async createAndAddToCart(body, lang,userId) {
+    // TESTIT: disable requesting from your own pharmacy
+    const { drugAdId } = body
+    const isOurDrugAd = await this.drugAdsModel.findOne({ _id: new ObjectIdType(drugAdId), pharmacyId: new ObjectIdType(body.pharmacyId) })
+    if (isOurDrugAd) {
+      throw new HttpException(
+        'You can\'t request from your own pharmacy',
+        HttpStatus.METHOD_NOT_ALLOWED,
+      );
+    }
+    const drugAd = await this.drugAdsModel.findOne({ _id: new ObjectIdType(drugAdId) })
+    if (body.discount !== drugAd.discount) {
+      throw new HttpException(
+        'Can\'t add drug to cart, the price you offer is different from the ad',
+        HttpStatus.METHOD_NOT_ALLOWED,
+      );
+    }
+    if (drugAd) {
+      const drugRequestBody = clone(body)
+      delete drugAd._id
+      drugRequestBody['drugAdId'] = drugAd
+      drugRequestBody['status'] = 'approved'
+      if (!drugRequestBody.packageUnits && isNaN(parseInt(drugRequestBody.packageUnits)))
+        drugRequestBody['packageUnits'] = null
+      if (!drugRequestBody.packages && isNaN(parseInt(drugRequestBody.packages)))
+        drugRequestBody['packages'] = null
+      const drugRequest = await this.model.create(drugRequestBody)
+      const pipelineConfig = aggregationPipelineConfig(lang)
+      const pipeline = aggregationMan(pipelineConfig, { _id: new ObjectIdType(drugRequest._id) })
+      const fullDrugRequest = (await this.model.aggregate(pipeline))[0];
+
+      const cartBody = {
+        drugRequestId : fullDrugRequest._id,
+        userId:new ObjectIdType(userId),
+        pharmacyId:body.pharmacyId,
+        checkedOut:false
+      }
+      await this.cartModel.create(cartBody)
+      return fullDrugRequest
+
+    } else {
+      throw new HttpException(
+        'Drug ad is not found',
+        HttpStatus.METHOD_NOT_ALLOWED,
+      );
+    }
+  }
+
   async updateDrugRequest(id, body, lang) {
     await this.model.updateOne({ "_id": new ObjectIdType(id) }, { "$set": body })
     const pipelineConfig = aggregationPipelineConfig(lang)

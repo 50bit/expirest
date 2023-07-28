@@ -48,6 +48,18 @@ export class DrugRequestController {
         return await this.drugRequestService.createRequest(body,lang);
     }
 
+    @Post('add-to-cart')
+    @HttpCode(HttpStatus.OK)
+    async createAndAddToCart(@Request() req: any,@Body() body: DrugRequest,@Headers() headers) {
+        const pharmacyId = req.user.pharmacyId
+        body['pharmacyId'] = new ObjectIdType(pharmacyId)
+        const userId = req.user.id
+        const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
+        ? headers['accept-language']
+        : 'multiLang');
+        return await this.drugRequestService.createAndAddToCart(body,lang,userId);
+    }
+
     @Put(':id')
     @HttpCode(HttpStatus.OK)
     async updateDrugRequest(@Request() req: any,@Body() body: DrugRequestUpdate,@Headers() headers,@Param('id') id: string) {
