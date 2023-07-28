@@ -135,6 +135,8 @@ export class AuthService {
                     fullName: user.fullName,
                     isAdmin: user.isAdmin,
                     pharmacy,
+                    email:user.email,
+                    pharmacyId:user.pharmacyId,
                     token: await this.generateToken({
                         id: user._id,
                         fullName: user.fullName,
