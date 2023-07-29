@@ -16,7 +16,7 @@ export class DrugRequestService extends CrudService {
     super(model);
   }
 
-  async createRequest(body, lang) {
+  async createRequest(body, lang, userId) {
     // TESTIT: disable requesting from your own pharmacy
     const { drugAdId } = body
     const isOurDrugAd = await this.drugAdsModel.findOne({ _id: new ObjectIdType(drugAdId), pharmacyId: new ObjectIdType(body.pharmacyId) })
@@ -40,7 +40,9 @@ export class DrugRequestService extends CrudService {
       const drugRequest = await this.model.create(drugRequestBody)
       const pipelineConfig = aggregationPipelineConfig(lang)
       const pipeline = aggregationMan(pipelineConfig, { _id: new ObjectIdType(drugRequest._id) })
-      return (await this.model.aggregate(pipeline))[0];
+      const fullDrugRequest = (await this.model.aggregate(pipeline))[0];
+      fullDrugRequest['isItemInCart'] = this.isItemInCart(fullDrugRequest._id,userId)
+      return fullDrugRequest
     } else {
       throw new HttpException(
         'Drug ad is not found',
@@ -79,6 +81,7 @@ export class DrugRequestService extends CrudService {
       const pipelineConfig = aggregationPipelineConfig(lang)
       const pipeline = aggregationMan(pipelineConfig, { _id: new ObjectIdType(drugRequest._id) })
       const fullDrugRequest = (await this.model.aggregate(pipeline))[0];
+      fullDrugRequest['isItemInCart'] = this.isItemInCart(fullDrugRequest._id,userId)
 
       const cartBody = {
         drugRequestId : fullDrugRequest._id,
@@ -141,6 +144,11 @@ export class DrugRequestService extends CrudService {
       );
     }
 
+  }
+
+  async isItemInCart (id,userId){
+    const isItemInCart = await this.cartModel.findOne({drugRequestId:id,checkedOut:false,userId})
+    return isItemInCart ? true : false
   }
 
 }

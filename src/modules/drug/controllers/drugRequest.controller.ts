@@ -42,10 +42,11 @@ export class DrugRequestController {
     async create(@Request() req: any,@Body() body: DrugRequest,@Headers() headers) {
         const pharmacyId = req.user.pharmacyId
         body['pharmacyId'] = new ObjectIdType(pharmacyId)
+        const userId = req.user.id
         const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
         ? headers['accept-language']
         : 'multiLang');
-        return await this.drugRequestService.createRequest(body,lang);
+        return await this.drugRequestService.createRequest(body,lang,userId);
     }
 
     @Post('add-to-cart')
@@ -99,9 +100,16 @@ export class DrugRequestController {
         const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
             ? headers['accept-language']
             : 'multiLang');
+
+        const userId = req.user.id
         const pipelineConfig = aggregationPipelineConfig(lang)
         const pipeline = aggregationMan(pipelineConfig, {})
-        return await this.drugRequestService.aggregate(pipeline);
+        const allRequests =  await this.drugRequestService.aggregate(pipeline);
+        for(const request of allRequests){
+            request['isItemInCart'] = await this.drugRequestService.isItemInCart(request._id,userId)
+        }
+        return allRequests;
+
     }
 
 
@@ -133,7 +141,7 @@ export class DrugRequestController {
         const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
             ? headers['accept-language']
             : 'multiLang');
-
+        const userId = req.user.id
         const {search,options} = clone(body)
         const pharmacyId = req.user.pharmacyId
         if(search.sent){
@@ -158,6 +166,12 @@ export class DrugRequestController {
                 }
             }
         }
-        return await this.drugRequestService.aggregate(pipeline);
+        const allRequests = await this.drugRequestService.aggregate(pipeline);
+
+        await this.drugRequestService.aggregate(pipeline);
+        for(const request of allRequests){
+            request['isItemInCart'] = await this.drugRequestService.isItemInCart(request._id,userId)
+        }
+        return allRequests;
     }
 }
