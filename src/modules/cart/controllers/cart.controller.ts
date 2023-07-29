@@ -20,6 +20,7 @@ import { aggregationMan } from 'src/common/utils/aggregationMan.utils';
 import { CartService } from '../services/cart.service';
 import { CrudController } from 'src/common/crud/controllers/crud.controller';
 import { AddItem } from '../interfaces/addItem.dto';
+import { ObjectIdType } from 'src/common/utils/db.utils';
 @ApiTags('Cart')
 @Controller('cart')
 @ApiBearerAuth('access-token')
@@ -33,8 +34,8 @@ export class CartController {
     @ApiCreatedResponse({})
     async getCart(@Request() req: any, @Headers() headers) {
         const body = {
-            userId: req.user.id,
-            pharmacyId: req.user.pharmacyId,
+            userId: new ObjectIdType(req.user.id),
+            pharmacyId: new ObjectIdType(req.user.pharmacyId),
             checkedOut: false
         }
         const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
