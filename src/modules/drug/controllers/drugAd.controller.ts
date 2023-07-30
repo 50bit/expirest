@@ -213,7 +213,9 @@ export class DrugAdsController {
             : 'multiLang');
         const { search, options } = clone(body)
         if (search.pharmacyId) {
-            if (!search.pharmacyId.$ne)
+            if (search.pharmacyId.$ne)
+                search["pharmacyId"] = {"$ne": new ObjectIdType(search.pharmacyId.$ne)}
+            else
                 search["pharmacyId"] = new ObjectIdType(search.pharmacyId)
         }
         if (search.name) {
