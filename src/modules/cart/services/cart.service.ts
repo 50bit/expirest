@@ -95,9 +95,9 @@ export class CartService extends CrudService {
     }
   }
 
-  async updateDrugAdStock(id){
+  async updateDrugAdStock(drugRequestId){
     const drugRequestPipelineConfig = drugRequestAggregationPipelineConfig("multiLang")
-    const drugRequestPipeline = aggregationMan(drugRequestPipelineConfig, { "_id": new ObjectIdType(id) })
+    const drugRequestPipeline = aggregationMan(drugRequestPipelineConfig, { "_id": drugRequestId._id })
     const drugRequest = (await this.drugRequestModel.aggregate(drugRequestPipeline))[0];
     if(drugRequest && drugRequest.drugAdId){
       //request with packages and packageUnits
