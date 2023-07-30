@@ -49,6 +49,7 @@ export class CartService extends CrudService {
     const pharmacyPipeline = aggregationMan(pharmacyPipelineConfig, { _id: new ObjectIdType(pharmacyId)})
     const pharmacy = (await this.pharmacyModel.aggregate(pharmacyPipeline))[0] ;
     let cartTotal = 0;
+    const orderId = new ObjectIdType();
     if (cartItems && cartItems.length > 0) {
       for (const item of cartItems) {
         const pharmacyGovernorateId = pharmacy.governorateId.id
@@ -76,7 +77,7 @@ export class CartService extends CrudService {
       }
       if (cartTotal > 0 && errors.length === 0) {
         for (const item of cartItems) {
-          await this.model.updateOne({ _id: item._id }, { "$set": { "checkedOut": true } })
+          await this.model.updateOne({ _id: item._id }, { "$set": { "checkedOut": true,orderId } })
           await this.updateDrugAdStock(item.drugRequestId)
           if(!await this.isInDeliveryZones(item.drugRequestId,item.userId))
             outOfDeliveryZone.push(item)
