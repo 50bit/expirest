@@ -72,6 +72,33 @@ export const aggregationPipelineConfig = (lang) => ([
                     "langField": "drug_name",
                     "lang": lang
                 },
+                "innerLookup":[
+                   {
+                        "ref": "pharmacies",
+                        "lookupField": "_id",
+                        "foriegnField": "pharmacyId",
+                        "innerLookup": [
+                            {
+                                "ref": "governorates",
+                                "lookupField": "_id",
+                                "foriegnField": "governorateId",
+                                "langConfig": {
+                                    "langField": "governorate_name",
+                                    "lang": lang
+                                }
+                            },
+                            {
+                                "ref": "cities",
+                                "lookupField": "_id",
+                                "foriegnField": "cityId",
+                                "langConfig": {
+                                    "langField": "city_name",
+                                    "lang": lang
+                                }
+                            }
+                        ]
+                    }
+                ]
             }
         ],
         "computedDateField": {

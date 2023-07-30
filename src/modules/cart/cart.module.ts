@@ -7,6 +7,7 @@ import { PharmacySchema } from '../pharmacy/schemas/pharmacy.schema';
 import { PharmacyModule } from '../pharmacy/pharmacy.module';
 import { DrugRequestSchema } from '../drug/schemas/drugRequest.schema';
 import { DrugAdSchema } from '../drug/schemas/drugAd.schema';
+import { DeliveryZonesSchema } from '../delivery-zones/schemas/delivery-zones.schema';
 
 @Module({
     controllers: [CartController],
@@ -16,7 +17,8 @@ import { DrugAdSchema } from '../drug/schemas/drugAd.schema';
             { name: 'carts', schema: CartsSchema },
             { name: 'pharmacies', schema: PharmacySchema },
             { name: 'drug-requests', schema: DrugRequestSchema},
-            { name: 'drug-ads', schema: DrugAdSchema}
+            { name: 'drug-ads', schema: DrugAdSchema},
+            { name: 'delivery-zones', schema: DeliveryZonesSchema }
         ])
     ]
 })
