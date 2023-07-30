@@ -166,8 +166,10 @@ export class DrugAdsController {
             ? headers['accept-language']
             : 'multiLang');
         const { search, options } = clone(body)
-        if (search.pharmacyId)
-            search["pharmacyId"] = new ObjectIdType(search.pharmacyId)
+        if (search.pharmacyId) {
+            if (!search.pharmacyId.$ne)
+                search["pharmacyId"] = new ObjectIdType(search.pharmacyId)
+        }
         if (search.name) {
             search["$or"] = [
                 { "drug_name_en": new RegExp(search.name, "gi") },
@@ -175,7 +177,7 @@ export class DrugAdsController {
             ]
             delete search.name
         }
-
+        
         const pipelineConfig = aggregationPipelineConfig(lang)
         const pipeline = aggregationMan(pipelineConfig, search, options)
         return await this.drugAdService.aggregate(pipeline);
