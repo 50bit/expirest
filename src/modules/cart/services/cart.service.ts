@@ -16,6 +16,7 @@ export class CartService extends CrudService {
     @InjectModel('pharmacies') public readonly pharmacyModel: Model<any>,
     @InjectModel('drug-requests') public readonly drugRequestModel: Model<any>,
     @InjectModel('drug-ads') public readonly drugAdsModel: Model<any>,
+    @InjectModel('delivery-zones') public readonly DeliverZonesModel: Model<any>,
   ) {
     super(model);
   }
@@ -43,6 +44,7 @@ export class CartService extends CrudService {
     const pipeline = aggregationMan(pipelineConfig, { pharmacyId: new ObjectIdType(pharmacyId), userId: new ObjectIdType(id), checkedOut: false })
     const cartItems = await this.model.aggregate(pipeline);
     const errors = [];
+    const outOfDeliveryZone = [];
     const pharmacyPipelineConfig = pharmacyAggregationPipelineConfig(lang);
     const pharmacyPipeline = aggregationMan(pharmacyPipelineConfig, { _id: new ObjectIdType(pharmacyId)})
     const pharmacy = (await this.pharmacyModel.aggregate(pharmacyPipeline))[0] ;
@@ -76,7 +78,19 @@ export class CartService extends CrudService {
         for (const item of cartItems) {
           await this.model.updateOne({ _id: item._id }, { "$set": { "checkedOut": true } })
           await this.updateDrugAdStock(item.drugRequestId)
+          if(!await this.isInDeliveryZones(item.drugRequestId,item.userId))
+            outOfDeliveryZone.push(item)
         }
+        if(outOfDeliveryZone.length === cartItems.length)
+          return {
+            cartItems,
+            allItemsOutOfDeliveryZone : true
+          }
+      
+        if(outOfDeliveryZone.length > 0)
+          return {
+            cartItems
+          }
         throw new HttpException(
           'All transaction has been correctly procceeded, Thank you for using Expirest ',
           HttpStatus.OK,
@@ -128,5 +142,11 @@ export class CartService extends CrudService {
         }
       }
     }else return 
+  }
+
+  async isInDeliveryZones(drugRequest,userId){
+    const cityId = get(drugRequest,"drugAdId.pharmacyId.cityId._id",null)
+    const userCity =  get(userId,"pharmacyId.cityId._id",null)
+    return await this.DeliverZonesModel.findOne({cityId}) && await this.DeliverZonesModel.findOne({cityId:userCity})
   }
 }
