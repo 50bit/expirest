@@ -12,6 +12,7 @@ import {
     Query,
     HttpCode,
     Headers,
+    Delete,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
@@ -86,5 +87,12 @@ export class CartController {
             : 'multiLang');
 
         return await this.cartService.checkout(pharmacyId, id, lang)
+    }
+
+    @Delete(':id')
+    @HttpCode(HttpStatus.OK)
+    @ApiCreatedResponse({})
+    async delete(@Param('id') id: string) {
+        return await this.cartService.delete(id);
     }
 }
