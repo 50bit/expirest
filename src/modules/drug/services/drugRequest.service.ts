@@ -5,7 +5,9 @@ import { CrudService } from 'src/common/crud/services/crud.service';
 import { ObjectIdType } from 'src/common/utils/db.utils';
 import { aggregationPipelineConfig } from '../schemas/drugRequest.schema';
 import { aggregationMan } from 'src/common/utils/aggregationMan.utils';
-import { clone } from 'lodash'
+import { aggregationPipelineConfig as cartAggregationPipelineConfig } from '../../cart/schemas/cart.schema';
+import { clone, findIndex, get } from 'lodash';
+
 @Injectable()
 export class DrugRequestService extends CrudService {
   constructor(
@@ -20,11 +22,32 @@ export class DrugRequestService extends CrudService {
     // TESTIT: disable requesting from your own pharmacy
     const { drugAdId } = body
     const isOurDrugAd = await this.drugAdsModel.findOne({ _id: new ObjectIdType(drugAdId), pharmacyId: new ObjectIdType(body.pharmacyId) })
-    if (isOurDrugAd) {
-      throw new HttpException(
-        'You can\'t request from your own pharmacy',
-        HttpStatus.METHOD_NOT_ALLOWED,
-      );
+    // if (isOurDrugAd) {
+    //   throw new HttpException(
+    //     'You can\'t request from your own pharmacy',
+    //     HttpStatus.METHOD_NOT_ALLOWED,
+    //   );
+    // }
+
+    const cartPipelineConfig = cartAggregationPipelineConfig(lang)
+    const cartPipeline = aggregationMan(cartPipelineConfig, { userId: new ObjectIdType(userId), pharmacyId: new ObjectIdType(body.pharmacyId), checkedOut: false })
+
+    const drugAdLookupIndex = findIndex((cartPipeline), (lookup) => {
+      return lookup.$lookup && lookup.$lookup.from === 'drug-requests'
+    })
+
+    if (drugAdLookupIndex >= 0) {
+      const pipelineCopy = clone(cartPipeline)
+      if (get(pipelineCopy[drugAdLookupIndex], '$lookup.pipeline[1].$lookup.pipeline[0].$match.$expr.$and')) {
+        pipelineCopy[drugAdLookupIndex].$lookup.pipeline[1].$lookup.pipeline[0].$match.$expr.$and.push({ _id: new ObjectIdType(drugAdId) })
+        const cartSameDrugRequests = await this.cartModel.aggregate(pipelineCopy);
+        if (cartSameDrugRequests && cartSameDrugRequests.length > 0) {
+          throw new HttpException(
+            'You can\'t request the same drug twice, please check out the drug first from the cart',
+            HttpStatus.METHOD_NOT_ALLOWED,
+          );
+        }
+      }
     }
 
     const drugAd = await this.drugAdsModel.findOne({ _id: new ObjectIdType(drugAdId) })
@@ -41,7 +64,7 @@ export class DrugRequestService extends CrudService {
       const pipelineConfig = aggregationPipelineConfig(lang)
       const pipeline = aggregationMan(pipelineConfig, { _id: new ObjectIdType(drugRequest._id) })
       const fullDrugRequest = (await this.model.aggregate(pipeline))[0];
-      fullDrugRequest['isItemInCart'] = this.isItemInCart(fullDrugRequest._id,userId)
+      fullDrugRequest['isItemInCart'] = this.isItemInCart(fullDrugRequest._id, userId)
       return fullDrugRequest
     } else {
       throw new HttpException(
@@ -51,7 +74,7 @@ export class DrugRequestService extends CrudService {
     }
   }
 
-  async createAndAddToCart(body, lang,userId) {
+  async createAndAddToCart(body, lang, userId) {
     // TESTIT: disable requesting from your own pharmacy
     const { drugAdId } = body
     const isOurDrugAd = await this.drugAdsModel.findOne({ _id: new ObjectIdType(drugAdId), pharmacyId: new ObjectIdType(body.pharmacyId) })
@@ -61,6 +84,26 @@ export class DrugRequestService extends CrudService {
         HttpStatus.METHOD_NOT_ALLOWED,
       );
     }
+    const cartPipelineConfig = cartAggregationPipelineConfig(lang)
+    const cartPipeline = aggregationMan(cartPipelineConfig, { userId: new ObjectIdType(userId), pharmacyId: new ObjectIdType(body.pharmacyId), checkedOut: false })
+
+    const drugAdLookupIndex = findIndex((cartPipeline), (lookup) => {
+      return lookup.$lookup && lookup.$lookup.from === 'drug-requests'
+    })
+    if (drugAdLookupIndex >= 0) {
+      const pipelineCopy = clone(cartPipeline)
+      if (get(pipelineCopy[drugAdLookupIndex], '$lookup.pipeline[1].$lookup.pipeline[0].$match.$expr.$and')) {
+        pipelineCopy[drugAdLookupIndex].$lookup.pipeline[1].$lookup.pipeline[0].$match.$expr.$and.push({ _id: new ObjectIdType(drugAdId) })
+        const cartSameDrugRequests = await this.cartModel.aggregate(pipelineCopy);
+        if (cartSameDrugRequests && cartSameDrugRequests.length > 0) {
+          throw new HttpException(
+            'You can\'t request the same drug twice, please check out the drug first from the cart',
+            HttpStatus.METHOD_NOT_ALLOWED,
+          );
+        }
+      }
+    }
+
     const drugAd = await this.drugAdsModel.findOne({ _id: new ObjectIdType(drugAdId) })
     if (body.discount !== drugAd.discount) {
       throw new HttpException(
@@ -81,13 +124,13 @@ export class DrugRequestService extends CrudService {
       const pipelineConfig = aggregationPipelineConfig(lang)
       const pipeline = aggregationMan(pipelineConfig, { _id: new ObjectIdType(drugRequest._id) })
       const fullDrugRequest = (await this.model.aggregate(pipeline))[0];
-      fullDrugRequest['isItemInCart'] = this.isItemInCart(fullDrugRequest._id,userId)
+      fullDrugRequest['isItemInCart'] = this.isItemInCart(fullDrugRequest._id, userId)
 
       const cartBody = {
-        drugRequestId : fullDrugRequest._id,
-        userId:new ObjectIdType(userId),
-        pharmacyId:body.pharmacyId,
-        checkedOut:false
+        drugRequestId: fullDrugRequest._id,
+        userId: new ObjectIdType(userId),
+        pharmacyId: body.pharmacyId,
+        checkedOut: false
       }
       await this.cartModel.create(cartBody)
       return fullDrugRequest
@@ -146,8 +189,8 @@ export class DrugRequestService extends CrudService {
 
   }
 
-  async isItemInCart (id,userId){
-    const isItemInCart = await this.cartModel.findOne({drugRequestId:id,checkedOut:false,userId})
+  async isItemInCart(id, userId) {
+    const isItemInCart = await this.cartModel.findOne({ drugRequestId: id, checkedOut: false, userId })
     return isItemInCart ? true : false
   }
 
