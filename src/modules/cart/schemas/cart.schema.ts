@@ -19,6 +19,9 @@ const CartsSchema: mongoose.Schema = new mongoose.Schema(
         checkedOut: {
             type: Boolean,
             default: false
+        },
+        orderId:{
+            type: ObjectId
         }
     },
     {

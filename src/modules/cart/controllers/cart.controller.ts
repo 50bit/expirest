@@ -22,6 +22,8 @@ import { CartService } from '../services/cart.service';
 import { CrudController } from 'src/common/crud/controllers/crud.controller';
 import { AddItem } from '../interfaces/addItem.dto';
 import { ObjectIdType } from 'src/common/utils/db.utils';
+import { searchBody } from 'src/common/crud/interfaces/searchBody.dto';
+import { clone, findIndex, get } from 'lodash'
 @ApiTags('Cart')
 @Controller('cart')
 @ApiBearerAuth('access-token')
@@ -94,5 +96,97 @@ export class CartController {
     @ApiCreatedResponse({})
     async delete(@Param('id') id: string) {
         return await this.cartService.delete(id);
+    }
+
+    @Get("purchases")
+    @HttpCode(HttpStatus.OK)
+    async cartPurchases(@Request() req: any, @Headers() headers) {
+        const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
+            ? headers['accept-language']
+            : 'multiLang');
+        const search = {}
+        const pharmacyId = req.user.pharmacyId
+        search['pharmacyId'] = new ObjectIdType(pharmacyId)
+
+        const pipelineConfig = aggregationPipelineConfig(lang)
+        const pipeline = aggregationMan(pipelineConfig, search)
+        pipeline.push({
+            "$group": {
+                "_id": {
+                    "orderId": "$orderId",
+                    "pharmacyId": "$pharmacyId"
+                },
+                // "cartItems": {
+                //     "$push": {
+                //         "drugRequestId":"$drugRequestId"
+                //     }
+                // },
+                "count":{
+                    "$count": {}
+                },
+                "total":{
+                    "$sum":"$drugRequestId.total"
+                }
+            }
+        })
+        pipeline.push({ 
+            $project: {
+                _id: 0,
+                order: "$_id",
+                count: 1,
+                total: 1
+            }
+        })
+        return await this.cartService.aggregate(pipeline);
+    }
+
+    @Get("sales")
+    @HttpCode(HttpStatus.OK)
+    async cartSales(@Request() req: any, @Headers() headers) {
+        const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
+            ? headers['accept-language']
+            : 'multiLang');
+        const search = {}
+        const pharmacyId = req.user.pharmacyId
+
+        const pipelineConfig = aggregationPipelineConfig(lang)
+        const pipeline = aggregationMan(pipelineConfig, search)
+
+        const requestLookupIndex = findIndex((pipeline),(lookup)=>{
+            return lookup.$lookup && lookup.$lookup.from === 'drug-requests'
+        })
+        if(requestLookupIndex >= 0){
+            if(get(pipeline[requestLookupIndex],'$lookup.pipeline[1].$lookup.pipeline[1].$lookup.pipeline[0].$match.$expr.$and'))
+                pipeline[requestLookupIndex].$lookup.pipeline[1].$lookup.pipeline[1].$lookup.pipeline[0].$match.$expr.$and.push({pharmacyId : new ObjectIdType(pharmacyId)})
+        }
+
+        pipeline.push({
+            "$group": {
+                "_id": {
+                    "orderId": "$orderId",
+                    "pharmacyId": "$pharmacyId"
+                },
+                // "cartItems": {
+                //     "$push": {
+                //         "drugRequestId":"$drugRequestId"
+                //     }
+                // },
+                "count":{
+                    "$count": {}
+                },
+                "total":{
+                    "$sum":"$drugRequestId.total"
+                }
+            }
+        })
+        pipeline.push({ 
+            $project: {
+                _id: 0,
+                order: "$_id",
+                count: 1,
+                total: 1
+            }
+        })
+        return await this.cartService.aggregate(pipeline);
     }
 }

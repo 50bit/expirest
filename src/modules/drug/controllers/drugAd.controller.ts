@@ -148,7 +148,7 @@ export class DrugAdsController {
             ? headers['accept-language']
             : 'multiLang');
         const pipelineConfig = aggregationPipelineConfig(lang)
-        const pipeline = aggregationMan(pipelineConfig, { pharmacyId: new ObjectIdType(pharmacyId) })
+        const pipeline = aggregationMan(pipelineConfig, { pharmacyId: new ObjectIdType(pharmacyId),deactivated:false })
         return await this.drugAdService.aggregate(pipeline);
     }
 
@@ -179,6 +179,8 @@ export class DrugAdsController {
             ]
             delete search.name
         }
+
+        search['deactivated'] = false
         
         const pipelineConfig = aggregationPipelineConfig(lang)
         const pipeline = aggregationMan(pipelineConfig, search, options)

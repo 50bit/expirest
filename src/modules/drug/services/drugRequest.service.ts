@@ -21,13 +21,13 @@ export class DrugRequestService extends CrudService {
   async createRequest(body, lang, userId) {
     // TESTIT: disable requesting from your own pharmacy
     const { drugAdId } = body
-    const isOurDrugAd = await this.drugAdsModel.findOne({ _id: new ObjectIdType(drugAdId), pharmacyId: new ObjectIdType(body.pharmacyId) })
-    // if (isOurDrugAd) {
-    //   throw new HttpException(
-    //     'You can\'t request from your own pharmacy',
-    //     HttpStatus.METHOD_NOT_ALLOWED,
-    //   );
-    // }
+    const isOurDrugAd = await this.drugAdsModel.findOne({ _id: new ObjectIdType(drugAdId), pharmacyId: new ObjectIdType(body.pharmacyId),deactivated:false })
+    if (isOurDrugAd) {
+      throw new HttpException(
+        'You can\'t request from your own pharmacy',
+        HttpStatus.METHOD_NOT_ALLOWED,
+      );
+    }
 
     const cartPipelineConfig = cartAggregationPipelineConfig(lang)
     const cartPipeline = aggregationMan(cartPipelineConfig, { userId: new ObjectIdType(userId), pharmacyId: new ObjectIdType(body.pharmacyId), checkedOut: false })
@@ -50,7 +50,7 @@ export class DrugRequestService extends CrudService {
       }
     }
 
-    const drugAd = await this.drugAdsModel.findOne({ _id: new ObjectIdType(drugAdId) })
+    const drugAd = await this.drugAdsModel.findOne({ _id: new ObjectIdType(drugAdId),deactivated:false })
     if (drugAd) {
       const drugRequestBody = clone(body)
       delete drugAd._id
@@ -77,7 +77,7 @@ export class DrugRequestService extends CrudService {
   async createAndAddToCart(body, lang, userId) {
     // TESTIT: disable requesting from your own pharmacy
     const { drugAdId } = body
-    const isOurDrugAd = await this.drugAdsModel.findOne({ _id: new ObjectIdType(drugAdId), pharmacyId: new ObjectIdType(body.pharmacyId) })
+    const isOurDrugAd = await this.drugAdsModel.findOne({ _id: new ObjectIdType(drugAdId), pharmacyId: new ObjectIdType(body.pharmacyId),deactivated:false })
     if (isOurDrugAd) {
       throw new HttpException(
         'You can\'t request from your own pharmacy',
@@ -104,7 +104,7 @@ export class DrugRequestService extends CrudService {
       }
     }
 
-    const drugAd = await this.drugAdsModel.findOne({ _id: new ObjectIdType(drugAdId) })
+    const drugAd = await this.drugAdsModel.findOne({ _id: new ObjectIdType(drugAdId),deactivated:false })
     if (body.discount !== drugAd.discount) {
       throw new HttpException(
         'Can\'t add drug to cart, the price you offer is different from the ad',
@@ -153,7 +153,7 @@ export class DrugRequestService extends CrudService {
 
   async approve(id, lang) {
     const drugRequest = await this.model.findOne({ "_id": new ObjectIdType(id) })
-    const drugAd = await this.drugAdsModel.findOne({ _id: new ObjectIdType(drugRequest.drugAdId) })
+    const drugAd = await this.drugAdsModel.findOne({ _id: new ObjectIdType(drugRequest.drugAdId),deactivated:false })
     if (drugAd.availablePackages >= drugRequest.packages && drugAd.availablePackageUnits >= drugRequest.packageUnits) {
       await this.model.updateOne({ "_id": new ObjectIdType(id) }, { "$set": { "status": 'approved' } })
       const pipelineConfig = aggregationPipelineConfig(lang)
