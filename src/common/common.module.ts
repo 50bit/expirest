@@ -12,7 +12,8 @@ import csvParser from 'csv-parser';
 import fs from 'fs';
 import path from 'path';
 import { DrugsSchema } from '../modules/drug/schemas/drugs.schema';
-import { isNaN } from 'lodash';
+import { isNaN, map } from 'lodash';
+import { DeliveryZonesSchema } from 'src/modules/delivery-zones/schemas/delivery-zones.schema';
 
 const logger = new Logger('DB');
 
@@ -23,7 +24,8 @@ const logger = new Logger('DB');
     MongooseModule.forFeature([
       { name: 'governorates', schema: GovernoratesSchema },
       { name: 'cities', schema: CitiesSchema },
-      { name: 'drugs', schema: DrugsSchema }
+      { name: 'drugs', schema: DrugsSchema },
+      { name: 'delivery-zones', schema: DeliveryZonesSchema }
     ]),
   ]
 })
@@ -32,7 +34,8 @@ export class CommonModule {
   constructor(
     @InjectModel('governorates') public readonly governorates: Model<any>,
     @InjectModel('cities') public readonly cities: Model<any>,
-    @InjectModel('drugs') public readonly drugs: Model<any>
+    @InjectModel('drugs') public readonly drugs: Model<any>,
+    @InjectModel('delivery-zones') public readonly deliveryZones: Model<any>,
   ) {
     const constsArray = [
       {
@@ -44,6 +47,11 @@ export class CommonModule {
         model: cities,
         data: CITIES,
         label: "Cities"
+      },
+      {
+        model: deliveryZones,
+        data: [],
+        label: "Delivery-Zones"
       }
     ]
 
@@ -81,8 +89,18 @@ export class CommonModule {
       const label = el.label || ''
       model.find({}).count().then((count) => {
         if (count === 0) {
-          model.insertMany(data)
-          logger.log(`${label} data inserted successfully`);
+          // add default delivery-zones
+          if(el.label == 'Delivery-Zones'){
+            this.cities.find({governorateId:"22"}).then(result=>{
+              const deliveryZoneData = map(result,(res)=>({cityId:res._id}))
+              model.insertMany(deliveryZoneData)
+              logger.log(`Default ${label} data inserted successfully`);
+            })
+          }
+          else{
+            model.insertMany(data)
+            logger.log(`${label} data inserted successfully`);
+          }
         } else {
           logger.log(`${label} collection was already intiallized with ${count} records`);
         }
