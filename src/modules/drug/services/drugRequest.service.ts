@@ -29,6 +29,14 @@ export class DrugRequestService extends CrudService {
       );
     }
 
+    const drugRequestExists = await this.model.findOne({ drugAdId: new ObjectIdType(drugAdId), pharmacyId: new ObjectIdType(body.pharmacyId),status:{"$ne":"rejected" }})
+    if (drugRequestExists) {
+      throw new HttpException(
+        'You can\'t request the same drug twice',
+        HttpStatus.METHOD_NOT_ALLOWED,
+      );
+    }
+
     const cartPipelineConfig = cartAggregationPipelineConfig(lang)
     const cartPipeline = aggregationMan(cartPipelineConfig, { userId: new ObjectIdType(userId), pharmacyId: new ObjectIdType(body.pharmacyId), checkedOut: false })
 
@@ -39,6 +47,7 @@ export class DrugRequestService extends CrudService {
     if (drugAdLookupIndex >= 0) {
       const pipelineCopy = clone(cartPipeline)
       if (get(pipelineCopy[drugAdLookupIndex], '$lookup.pipeline[1].$lookup.pipeline[0].$match.$expr.$and')) {
+        pipelineCopy[drugAdLookupIndex].$lookup.pipeline[0].$match.$expr.$and.push({"status":{"$ne":"rejected"}})
         pipelineCopy[drugAdLookupIndex].$lookup.pipeline[1].$lookup.pipeline[0].$match.$expr.$and.push({ _id: new ObjectIdType(drugAdId) })
         const cartSameDrugRequests = await this.cartModel.aggregate(pipelineCopy);
         if (cartSameDrugRequests && cartSameDrugRequests.length > 0) {

@@ -84,6 +84,7 @@ export class AuthService {
     async login(body: any,lang:string) {
         const user = await this.userModel.findOne({
             email: body.email,
+            active:true
         }, { "password": 1, "email": 1, "fullName": 1, "activatedByEmail": 1, "approved": 1, "pharmacyId": 1, "_id": 1 })
 
         if (!user) {
