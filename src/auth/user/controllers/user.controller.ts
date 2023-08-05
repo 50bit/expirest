@@ -14,6 +14,7 @@ import {
   Headers,
   UseInterceptors,
   UploadedFiles,
+  Delete,
 } from '@nestjs/common';
 import { UserService } from '../services/user.service';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
@@ -127,6 +128,12 @@ export class UserController  {
 
     const userId = req.user.id;
     return await this.usersService.updateUser(userId,body,lang);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.OK)
+  async deleteUser(@Param('id') id: string) {
+    return await this.usersService.deleteUser(id);
   }
 
 }
