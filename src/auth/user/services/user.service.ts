@@ -101,4 +101,7 @@ export class UserService extends CrudService {
       );
     }
   }
+  async deleteUser(id){
+    return await this.userModel.updateOne({_id:id},{"$set":{active:false}})
+  }
 }
