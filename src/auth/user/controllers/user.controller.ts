@@ -37,7 +37,7 @@ import { UpdateUser } from '../interfaces/updateUser.dto';
 @Controller('user')
 @ApiBearerAuth('access-token')
 // @UseGuards(AuthGuard('jwt'))
-export class UserController  {
+export class UserController {
   constructor(public readonly usersService: UserService) {
   }
 
@@ -87,14 +87,14 @@ export class UserController  {
   @ApiBody({
     type: AddUser,
   })
-  async sendChangePassCode(@Body() body:any) {
+  async sendChangePassCode(@Body() body: any) {
     return await this.usersService.sendChangePassCode(body);
   }
 
   @Post('change-password/:id')
   @HttpCode(HttpStatus.OK)
-  async changePassword(@Body() body:ChangePassword,@Param('id') id: string) {
-    return await this.usersService.changePassword(body,id);
+  async changePassword(@Body() body: ChangePassword, @Param('id') id: string) {
+    return await this.usersService.changePassword(body, id);
   }
 
   @Post('add-user')
@@ -107,7 +107,7 @@ export class UserController  {
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
-  async addUser(@Request() req , @Body() body: AddUser) {
+  async addUser(@Request() req, @Body() body: AddUser) {
     const pharmacyId = req.user.pharmacyId
     body['pharmacyId'] = new ObjectIdType(pharmacyId);
     return await this.usersService.addUser(body);
@@ -121,13 +121,13 @@ export class UserController  {
     type: UpdateUser,
   })
   @HttpCode(HttpStatus.OK)
-  async UpdateUser(@Request() req ,@Body() body: UpdateUser, @Headers() headers) {
+  async UpdateUser(@Request() req, @Body() body: UpdateUser, @Headers() headers) {
     const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
       ? headers['accept-language']
       : 'multiLang');
 
     const userId = req.user.id;
-    return await this.usersService.updateUser(userId,body,lang);
+    return await this.usersService.updateUser(userId, body, lang);
   }
 
   @Delete(':id')
@@ -136,4 +136,16 @@ export class UserController  {
     return await this.usersService.deleteUser(id);
   }
 
+  @Get()
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(HttpStatus.OK)
+  async getUsers(@Request() req: any, @Headers() headers) {
+    const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
+      ? headers['accept-language']
+      : 'multiLang');
+    const pharmacyId = new ObjectIdType(req.user.pharmacyId)
+    const pipelineConfig = aggregationPipelineConfig(lang)
+    const pipeline = aggregationMan(pipelineConfig, { pharmacyId, active: true })
+    return await this.usersService.aggregate(pipeline);
+  }
 }
