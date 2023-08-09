@@ -116,11 +116,11 @@ export class CartController {
                     "orderId": "$orderId",
                     "pharmacyId": "$pharmacyId"
                 },
-                // "cartItems": {
-                //     "$push": {
-                //         "drugRequestId":"$drugRequestId"
-                //     }
-                // },
+                "cartItems": {
+                    "$push": {
+                        "drugRequestId":"$drugRequestId"
+                    }
+                },
                 "count":{
                     "$count": {}
                 },
@@ -134,7 +134,8 @@ export class CartController {
                 _id: 0,
                 order: "$_id",
                 count: 1,
-                total: 1
+                total: 1,
+                cartItems:1
             }
         })
         return await this.cartService.aggregate(pipeline);
@@ -166,11 +167,11 @@ export class CartController {
                     "orderId": "$orderId",
                     "pharmacyId": "$pharmacyId"
                 },
-                // "cartItems": {
-                //     "$push": {
-                //         "drugRequestId":"$drugRequestId"
-                //     }
-                // },
+                "cartItems": {
+                    "$push": {
+                        "drugRequestId":"$drugRequestId"
+                    }
+                },
                 "count":{
                     "$count": {}
                 },
@@ -184,7 +185,8 @@ export class CartController {
                 _id: 0,
                 order: "$_id",
                 count: 1,
-                total: 1
+                total: 1,
+                cartItems:1
             }
         })
         return await this.cartService.aggregate(pipeline);
