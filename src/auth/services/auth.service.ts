@@ -138,6 +138,7 @@ export class AuthService {
                     pharmacy,
                     email:user.email,
                     pharmacyId:user.pharmacyId,
+                    userId:user._id,
                     token: await this.generateToken({
                         id: user._id,
                         fullName: user.fullName,
