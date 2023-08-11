@@ -21,7 +21,7 @@ const CartsSchema: mongoose.Schema = new mongoose.Schema(
             default: false
         },
         orderId:{
-            type: ObjectId
+            type: Number
         }
     },
     {
