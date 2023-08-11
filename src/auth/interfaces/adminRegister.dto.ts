@@ -8,7 +8,7 @@ export class AdminRegister {
 
     @IsString()
     @ApiProperty()
-    PharmacyPhoneNumber: string
+    pharmacyPhoneNumber: string
 
     @IsString()
     @ApiProperty()
