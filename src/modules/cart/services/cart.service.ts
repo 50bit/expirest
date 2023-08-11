@@ -5,9 +5,10 @@ import { CrudService } from 'src/common/crud/services/crud.service';
 import { aggregationPipelineConfig } from '../schemas/cart.schema';
 import { aggregationMan } from 'src/common/utils/aggregationMan.utils';
 import { ObjectIdType } from 'src/common/utils/db.utils';
-import { forEach, get } from 'lodash'
+import { forEach, get, random } from 'lodash'
 import { aggregationPipelineConfig as pharmacyAggregationPipelineConfig } from '../../pharmacy/schemas/pharmacy.schema';
 import { aggregationPipelineConfig as drugRequestAggregationPipelineConfig } from '../../drug/schemas/drugRequest.schema'
+import { nanoid } from 'nanoid';
 
 @Injectable()
 export class CartService extends CrudService {
@@ -49,7 +50,7 @@ export class CartService extends CrudService {
     const pharmacyPipeline = aggregationMan(pharmacyPipelineConfig, { _id: new ObjectIdType(pharmacyId)})
     const pharmacy = (await this.pharmacyModel.aggregate(pharmacyPipeline))[0] ;
     let cartTotal = 0;
-    const orderId = new Date().valueOf();
+    const orderId = nanoid(6)
     if (cartItems && cartItems.length > 0) {
       for (const item of cartItems) {
         const pharmacyGovernorateId = pharmacy.governorateId.id
