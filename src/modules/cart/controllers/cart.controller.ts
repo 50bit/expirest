@@ -113,7 +113,7 @@ export class CartController {
         pipeline.push({
             "$group": {
                 "_id": {
-                    "orderNo": "$orderId",
+                    "orderNo": "$orderNo",
                     "pharmacyId": "$pharmacyId"
                 },
                 "cartItems": {
@@ -164,7 +164,7 @@ export class CartController {
         pipeline.push({
             "$group": {
                 "_id": {
-                    "orderNo": "$orderId",
+                    "orderNo": "$orderNo",
                     "pharmacyId": "$pharmacyId"
                 },
                 "cartItems": {

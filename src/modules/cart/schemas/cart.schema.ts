@@ -20,7 +20,7 @@ const CartsSchema: mongoose.Schema = new mongoose.Schema(
             type: Boolean,
             default: false
         },
-        orderId:{
+        orderNo:{
             type: Number
         }
     },
