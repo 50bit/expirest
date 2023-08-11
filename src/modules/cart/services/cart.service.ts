@@ -49,7 +49,7 @@ export class CartService extends CrudService {
     const pharmacyPipeline = aggregationMan(pharmacyPipelineConfig, { _id: new ObjectIdType(pharmacyId)})
     const pharmacy = (await this.pharmacyModel.aggregate(pharmacyPipeline))[0] ;
     let cartTotal = 0;
-    const orderId = new ObjectIdType();
+    const orderId = new Date().valueOf();
     if (cartItems && cartItems.length > 0) {
       for (const item of cartItems) {
         const pharmacyGovernorateId = pharmacy.governorateId.id
