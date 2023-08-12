@@ -8,7 +8,7 @@ import { random, clone } from 'lodash';
 import { aggregationPipelineConfig } from '../schemas/user.schema';
 import { aggregationMan } from 'src/common/utils/aggregationMan.utils';
 import { ObjectIdType } from 'src/common/utils/db.utils';
-
+import { generate } from 'generate-password';
 @Injectable()
 export class UserService extends CrudService {
   constructor(
@@ -31,10 +31,17 @@ export class UserService extends CrudService {
       );
 
     const verficationCode = random(10000, 99999)
+    const password = generate({
+      length: 10,
+      numbers: true,
+    });
     try {
       body["verficationCode"] = verficationCode;
+      body["password"]= password;
       const user = await this.userModel.create({...body});
-      await this.mailUtils.sendVerificationEmail('', verficationCode, body.email, false)
+      await this.mailUtils.sendVerificationEmail(body.fullName, verficationCode, body.email, false)
+      await this.mailUtils.sendRandomGeneratedPasswordEmail(body.fullName,password,body.email)
+      delete user.password
       return user
     } catch (error) {
       throw new HttpException(

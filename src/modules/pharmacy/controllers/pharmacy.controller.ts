@@ -49,13 +49,13 @@ export class PharmacyController {
     @ApiCreatedResponse({
         type: Pharmacy,
     })
-    async getById(@Param('id') id: string, @Headers() headers) {
+    async getById(@Param('id') id: string, @Headers() headers,@Request() req: any) {
         const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
             ? headers['accept-language']
             : 'multiLang');
-        const pipelineConfig = aggregationPipelineConfig(lang)
-        const pipeline = aggregationMan(pipelineConfig, {_id:new ObjectIdType(id)})
-        return (await this.pharmacyService.aggregate(pipeline))[0];
+        const userId = req.user.id
+        return this.pharmacyService.getPharmacyById(id,userId,lang)
+        
     }
 
     @Post('search')

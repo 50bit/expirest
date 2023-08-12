@@ -11,4 +11,8 @@ export class AddUser {
   @ApiProperty()
   @IsString()
   fullName: string;
+
+  @ApiProperty()
+  @IsString()
+  phoneNumber: string;
 }

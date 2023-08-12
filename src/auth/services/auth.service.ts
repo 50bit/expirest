@@ -85,7 +85,7 @@ export class AuthService {
         const user = await this.userModel.findOne({
             email: body.email,
             active:true
-        }, { "password": 1, "email": 1, "fullName": 1, "activatedByEmail": 1, "approved": 1, "pharmacyId": 1, "_id": 1 })
+        }, { "password": 1, "email": 1, "fullName": 1, "activatedByEmail": 1, "approved": 1, "pharmacyId": 1, "_id": 1, "isAdmin": 1 })
 
         if (!user) {
             throw new HttpException(
@@ -183,7 +183,7 @@ export class AuthService {
             email: body.email,
             phoneNumber: body.userPhoneNumber,
             password: body.password,
-            isAdmin: body.isAdmin || false,
+            isAdmin: true,
             activatedByEmail: false
         }
         let pharmacy = {
