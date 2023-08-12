@@ -70,4 +70,14 @@ export class PharmacyService extends CrudService {
     const pipeline = aggregationMan(pipelineConfig, { _id: new ObjectIdType(_id) })
     return (await this.model.aggregate(pipeline))[0];
   }
+
+  async getPharmacyById(id,userId,lang){
+    const user = await this.usersModel.findOne({_id:userId}).select('pharmacistId')
+    const pipelineConfig = aggregationPipelineConfig(lang)
+    const pipeline = aggregationMan(pipelineConfig, {_id:new ObjectIdType(id)})
+    const pharmacy = (await this.model.aggregate(pipeline))[0];
+    
+    pharmacy['pharmacistId'] = user.pharmacistId;
+    return pharmacy;
+  }
 }
