@@ -14,6 +14,7 @@ import { PharmacySchema } from 'src/modules/pharmacy/schemas/pharmacy.schema';
 import { MailUtils } from 'src/common/utils/mail.utils';
 import { DeliveryZonesService } from 'src/modules/delivery-zones/services/delivery-zones.service';
 import { DeliveryZonesSchema } from 'src/modules/delivery-zones/schemas/delivery-zones.schema';
+import { SysAdminchema } from './user/schemas/sysAdmin.schema';
 
 @Module({
   imports: [
@@ -34,7 +35,8 @@ import { DeliveryZonesSchema } from 'src/modules/delivery-zones/schemas/delivery
     MongooseModule.forFeature([
       { name: 'users', schema: UserSchema },
       { name: 'pharmacies', schema: PharmacySchema },
-      { name: 'delivery-zones', schema: DeliveryZonesSchema }
+      { name: 'delivery-zones', schema: DeliveryZonesSchema },
+      { name: 'sys-admins', schema: SysAdminchema }
     ]),
   ],
   controllers: [AuthController, UserController],
