@@ -9,6 +9,7 @@ import { aggregationPipelineConfig } from '../user/schemas/user.schema';
 import { aggregationMan } from 'src/common/utils/aggregationMan.utils';
 import { ObjectIdType } from 'src/common/utils/db.utils';
 import { aggregationPipelineConfig as  pharmacyAggregationPipelineConfig } from 'src/modules/pharmacy/schemas/pharmacy.schema';
+import { DeliveryZonesService } from 'src/modules/delivery-zones/services/delivery-zones.service';
 @Injectable()
 export class AuthService {
     constructor(
@@ -16,7 +17,8 @@ export class AuthService {
         @InjectModel('pharmacies') public readonly pharmacyModel: Model<any>,
         private readonly jwtService: JwtService,
         private readonly configService: ConfigService,
-        private readonly mailUtils: MailUtils
+        private readonly mailUtils: MailUtils,
+        private readonly deliveryZonesService: DeliveryZonesService
     ) { }
 
     async generateToken(user: any) {
@@ -131,14 +133,16 @@ export class AuthService {
                 }
                 const pipelineConfig = pharmacyAggregationPipelineConfig(lang)
                 const pipeline = aggregationMan(pipelineConfig, {_id:new ObjectIdType(user.pharmacyId)})
-                const pharmacy = (await this.pharmacyModel.aggregate(pipeline))[0].name
+                const pharmacy = (await this.pharmacyModel.aggregate(pipeline))[0]
+                const inDeliveryZone = await this.deliveryZonesService.inDeliveryZone({cityId:pharmacy.cityId._id})
                 return await {
                     fullName: user.fullName,
                     isAdmin: user.isAdmin,
-                    pharmacy,
+                    pharmacy:pharmacy.name,
                     email:user.email,
                     pharmacyId:user.pharmacyId,
                     userId:user._id,
+                    inDeliveryZone,
                     token: await this.generateToken({
                         id: user._id,
                         fullName: user.fullName,
