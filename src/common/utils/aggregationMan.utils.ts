@@ -38,6 +38,7 @@ export const aggregationMan = (aggregation, query, options={}) => {
     forEach(aggregation, (lookupConfig) => {
         fullPipeline = [...fullPipeline, ...lookupBuilder(lookupConfig)]
     })
+    console.log(JSON.stringify([...fullPipeline,...opt]))
     return [...fullPipeline,...opt];
 }
 
@@ -80,6 +81,7 @@ export const addRemainingTimeField = (lookupConfig) => {
 export const lookupBuilder = (lookupConfig) => {
     const foriegnField = zipObject([lookupConfig.foriegnField], [`$${lookupConfig.foriegnField}`])
     let innerLookup = []
+    let unwind = {}
     if (lookupConfig.innerLookup && lookupConfig.innerLookup.length > 0) {
         lookupConfig.innerLookup.forEach((lookup) => innerLookup.push(lookupBuilder(lookup)))
     }
@@ -92,7 +94,10 @@ export const lookupBuilder = (lookupConfig) => {
     if (lookupConfig.langConfig && !lookupConfig.ref)
         return langPipeline(lookupConfig.langConfig)
 
-    return [
+    if(lookupConfig.unwind)
+        unwind = {"$unwind":lookupConfig.unwind.field}
+
+    const pipeline =  [
         {
             $lookup: {
                 from: lookupConfig.ref,
@@ -124,6 +129,24 @@ export const lookupBuilder = (lookupConfig) => {
         ...project,
         ...remaining_time
     ]
+
+    if(!isEmpty(unwind)){
+        const groupedFields = {}
+        forEach(lookupConfig.unwind.groupedFields,(gf)=> (groupedFields[gf]={'$first':`$${gf}`}))
+        return [
+            unwind,
+            ...pipeline,
+            {
+                $group: {
+                    _id: "$_id",
+                    [lookupConfig.unwind.field.replace("$",'')]: { $push: lookupConfig.unwind.field },
+                    ...groupedFields
+                }
+            }
+        ]
+    }
+        
+    return pipeline
 }
 
 

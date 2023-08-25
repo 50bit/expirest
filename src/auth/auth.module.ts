@@ -12,6 +12,8 @@ import { JwtStrategy } from './strategy/jwt.strategy';
 import { AuthService } from './services/auth.service';
 import { PharmacySchema } from 'src/modules/pharmacy/schemas/pharmacy.schema';
 import { MailUtils } from 'src/common/utils/mail.utils';
+import { DeliveryZonesService } from 'src/modules/delivery-zones/services/delivery-zones.service';
+import { DeliveryZonesSchema } from 'src/modules/delivery-zones/schemas/delivery-zones.schema';
 
 @Module({
   imports: [
@@ -31,7 +33,8 @@ import { MailUtils } from 'src/common/utils/mail.utils';
     }),
     MongooseModule.forFeature([
       { name: 'users', schema: UserSchema },
-      { name: 'pharmacies', schema: PharmacySchema }
+      { name: 'pharmacies', schema: PharmacySchema },
+      { name: 'delivery-zones', schema: DeliveryZonesSchema }
     ]),
   ],
   controllers: [AuthController, UserController],
@@ -42,7 +45,8 @@ import { MailUtils } from 'src/common/utils/mail.utils';
       provide: 'ConfigService',
       useValue: new ConfigService(`.env.${process.env.NODE_ENV}`),
     },
-    MailUtils
+    MailUtils,
+    DeliveryZonesService
   ],
   exports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
