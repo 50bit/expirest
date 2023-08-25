@@ -10,4 +10,10 @@ export class DeliveryZonesService extends CrudService {
   ) {
     super(model);
   }
+
+  async inDeliveryZone(query){
+    const deliveryZone = await this.model.findOne(query)
+    return deliveryZone ? true : false
+  }
+
 }

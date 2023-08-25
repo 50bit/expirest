@@ -178,17 +178,48 @@ export class DrugRequestService extends CrudService {
   }
 
   async reject(id) {
-    await this.model.updateOne({ "_id": new ObjectIdType(id) }, { "$set": { "status": 'rejected' } })
+    const inCart = this.cartModel.findOne({ drugRequestId: id })
+    if(!inCart){
+      await this.model.updateOne({ "_id": new ObjectIdType(id) }, { "$set": { "status": 'rejected' } })
+      throw new HttpException(
+        'DrugRequest has been successfully updated',
+        HttpStatus.OK,
+      );
+    }else{
+      const isCheckedOut = this.cartModel.findOne({ drugRequestId: id,checkedOut:false })
+      if(!isCheckedOut){
+        await this.model.updateOne({ "_id": new ObjectIdType(id) }, { "$set": { "status": 'rejected' } })
+        await this.cartModel.deleteOne({ drugRequestId: id })
+        throw new HttpException(
+          'DrugRequest has been successfully updated and request has been deleted from the cart',
+          HttpStatus.OK,
+        );
+      }else{
+        throw new HttpException(
+          'Can\'t reject a checked out request',
+          HttpStatus.METHOD_NOT_ALLOWED,
+        );
+      }
+    }
   }
 
   async deleteDrugRequest(id, lang) {
     try {
-      await this.delete(id);
-      await this.cartModel.deleteOne({ drugRequestId: id })
-      throw new HttpException(
-        'DrugRequest has been successfully deleted',
-        HttpStatus.OK,
-      );
+      const isCheckedOut = await this.cartModel.findOne({ drugRequestId: id,checkedOut:false })
+      if(!isCheckedOut){
+        await this.delete(id);
+        await this.cartModel.deleteOne({ drugRequestId: id })
+        throw new HttpException(
+          'DrugRequest has been successfully deleted',
+          HttpStatus.OK,
+        );
+      }else{
+        throw new HttpException(
+          'Can\'t delete a checked out request',
+          HttpStatus.METHOD_NOT_ALLOWED,
+        );
+      }
+      
     } catch (error) {
       throw new HttpException(
         'Something happened while deleting',

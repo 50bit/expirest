@@ -101,7 +101,7 @@ export class DrugAdsController {
         const pipelineConfig = aggregationPipelineConfig(lang)
         const pipeline = aggregationMan(pipelineConfig, {})
         await this.drugAdService.reject(id);
-        return await this.drugAdService.aggregate(pipeline);
+        return (await this.drugAdService.aggregate(pipeline))[0];
     }
 
     @Put(':id')
@@ -181,9 +181,13 @@ export class DrugAdsController {
         }
 
         search['deactivated'] = false
+        search['status'] = 'approved'
         
         const pipelineConfig = aggregationPipelineConfig(lang)
         const pipeline = aggregationMan(pipelineConfig, search, options)
-        return await this.drugAdService.aggregate(pipeline);
+        const drugAds = await this.drugAdService.aggregate(pipeline);
+        const pharmacyId = req.user.pharmacyId
+
+        return await this.drugAdService.addDeliveryZoneBoolean(pharmacyId,drugAds)
     }
 }
