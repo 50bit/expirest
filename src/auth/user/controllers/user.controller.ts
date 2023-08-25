@@ -21,7 +21,7 @@ import { ApiBearerAuth, ApiBody, ApiConsumes, ApiCreatedResponse, ApiTags } from
 import { AuthGuard } from '@nestjs/passport';
 import { CrudController } from '../../../common/crud/controllers/crud.controller';
 import { ObjectIdType } from '../../../common/utils/db.utils';
-import { isEmpty } from 'lodash';
+import { isEmpty, clone } from 'lodash';
 import { User } from 'src/auth/interfaces/user.dto';
 import { AddUser } from 'src/auth/user/interfaces/addUser.dto';
 import { ChangePassword } from '../interfaces/changePassword.dto';
@@ -32,6 +32,7 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import fs from 'fs';
 import { UpdateUser } from '../interfaces/updateUser.dto';
+import { searchBody } from 'src/common/crud/interfaces/searchBody.dto';
 
 @ApiTags('User')
 @Controller('user')
@@ -146,6 +147,22 @@ export class UserController {
     const pharmacyId = new ObjectIdType(req.user.pharmacyId)
     const pipelineConfig = aggregationPipelineConfig(lang)
     const pipeline = aggregationMan(pipelineConfig, { pharmacyId, active: true })
+    return await this.usersService.aggregate(pipeline);
+  }
+
+  @Post("search")
+  @HttpCode(HttpStatus.OK)
+  async searchDrugAds(@Request() req: any, @Headers() headers, @Body() body: searchBody) {
+    const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
+      ? headers['accept-language']
+      : 'multiLang');
+    const { search, options } = clone(body)
+    if (search.pharmacyId) {
+      search['pharmacyId'] = new ObjectIdType(search.pharmacyId)
+    }
+
+    const pipelineConfig = aggregationPipelineConfig(lang)
+    const pipeline = aggregationMan(pipelineConfig, search, options)
     return await this.usersService.aggregate(pipeline);
   }
 }

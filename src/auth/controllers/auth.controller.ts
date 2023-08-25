@@ -41,6 +41,18 @@ export class AuthController {
     return await this.authService.login(body,lang);
   }
 
+  @Post('sysAdmin-login')
+  @ApiCreatedResponse({
+    type: Login,
+  })
+  @HttpCode(HttpStatus.OK)
+  async sysAdminLogin(@Body() body: Auth,@Headers() headers) {
+    const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
+    ? headers['accept-language']
+    : 'multiLang');
+    return await this.authService.sysAdminLogin(body,lang);
+  }
+
   @Post('user-register')
   @ApiConsumes('multipart/form-data')
   @ApiCreatedResponse({

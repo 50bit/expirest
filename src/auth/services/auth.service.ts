@@ -15,11 +15,14 @@ export class AuthService {
     constructor(
         @InjectModel('users') public readonly userModel: Model<any>,
         @InjectModel('pharmacies') public readonly pharmacyModel: Model<any>,
+        @InjectModel('sys-admins') public readonly sysAdminModel: Model<any>,
         private readonly jwtService: JwtService,
         private readonly configService: ConfigService,
         private readonly mailUtils: MailUtils,
         private readonly deliveryZonesService: DeliveryZonesService
-    ) { }
+    ) {
+        this.sysAdminModel.create({"email":"sysAdmin@expirest.com","password":"SysAdmin@Expirest"})
+     }
 
     async generateToken(user: any) {
         return {
@@ -149,6 +152,39 @@ export class AuthService {
                         isAdmin: user.isAdmin,
                         email: user.email,
                         pharmacyId: user.pharmacyId
+                    }),
+                };
+            }
+        }
+    }
+
+    async sysAdminLogin (body: any,lang:string) {
+        const user = await this.sysAdminModel.findOne({
+            email: body.email
+        }, { "password": 1, "email": 1, "_id": 1 })
+
+        if (!user) {
+            throw new HttpException(
+                'Error, Account not found',
+                HttpStatus.METHOD_NOT_ALLOWED,
+            );
+        } else {
+            const isMatch = await user.isPasswordMatch(body.password.toString(), user.password.toString());
+            // Invalid password
+            if (!isMatch) {
+                throw new HttpException(
+                    'Error, Invalid User or Password',
+                    HttpStatus.METHOD_NOT_ALLOWED,
+                );
+            } else {
+
+                return await {
+                    sysAdmin: true,
+                    email:user.email,
+                    userId:user._id,
+                    token: await this.generateToken({
+                        id: user._id,
+                        email: user.email
                     }),
                 };
             }
