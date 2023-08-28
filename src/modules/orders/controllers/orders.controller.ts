@@ -42,6 +42,27 @@ export class OrdersController {
         return (await this.orderService.aggregate(pipeline))[0];
     }
 
+    @Get("")
+    @HttpCode(HttpStatus.OK)
+    async getAllOrders(@Request() req: any, @Headers() headers) {
+        const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
+            ? headers['accept-language']
+            : 'multiLang');
+        const search = {}
+        const pipelineConfig = aggregationPipelineConfig(lang)
+        const pipeline = aggregationMan(pipelineConfig, search)
+       
+        const result = await this.orderService.aggregate(pipeline);
+        for(const res of result){
+            res["count"] = res.drugRequests.length || 0;
+            res["total"] = reduce(map(res.drugRequests,(dr)=>dr.total), function(sum, n) {
+                return sum + n;
+            }, 0) || 0;
+        }
+        
+        return result
+    }
+
     @Get("purchases")
     @HttpCode(HttpStatus.OK)
     async ordersPurchases(@Request() req: any, @Headers() headers) {

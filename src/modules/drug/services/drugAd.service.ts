@@ -92,7 +92,7 @@ export class DrugAdService extends CrudService {
       for(const drugAd of drugAds){
      
         if(drugAd.pharmacyId && drugAd.pharmacyId.cityId && drugAd.pharmacyId.cityId._id){
-          console.log({cityId:pharmacy.cityId._id,deliveryZone:drugAd.pharmacyId.cityId._id || ""})
+          // console.log({cityId:pharmacy.cityId._id,deliveryZone:drugAd.pharmacyId.cityId._id || ""})
           drugAd['inDeliveryZone'] = await this.deliveryZonesService.inDeliveryZone({cityId:pharmacy.cityId._id,deliveryZones:drugAd.pharmacyId.cityId._id || ""})
         }
       }
