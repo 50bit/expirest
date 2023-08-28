@@ -38,7 +38,6 @@ export const aggregationMan = (aggregation, query, options={}) => {
     forEach(aggregation, (lookupConfig) => {
         fullPipeline = [...fullPipeline, ...lookupBuilder(lookupConfig)]
     })
-    console.log(JSON.stringify([...fullPipeline,...opt]))
     return [...fullPipeline,...opt];
 }
 
