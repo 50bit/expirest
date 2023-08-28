@@ -116,7 +116,7 @@ export class CrudService {
 
   async updateById(id: string, body: any) {
     try {
-      const result = await this.Model.updateOne({ _id: id }, body);
+      const result = await this.Model.updateOne({ _id: id }, {"$set":body});
       if (result) {
         return await this.Model.findById(id);
       } else {
@@ -129,7 +129,7 @@ export class CrudService {
 
   async update(conditions: any, body: any) {
     try {
-      return await this.Model.updateOne(conditions, body);
+      return await this.Model.updateOne(conditions, {"$set":body});
     } catch (e) {
       throw new HttpException(e.message, HttpStatus.METHOD_NOT_ALLOWED);
     }
