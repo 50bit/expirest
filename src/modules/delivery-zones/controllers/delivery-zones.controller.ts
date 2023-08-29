@@ -17,7 +17,7 @@ import {
 import { DeliveryZonesService } from '../services/delivery-zones.service';
 import { ApiBearerAuth, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
-import { aggregationPipelineConfig } from 'src/modules/city/schemas/cities.schema';
+import { aggregationPipelineConfig } from 'src/modules/delivery-zones/schemas/delivery-zones.schema';
 import { aggregationMan } from 'src/common/utils/aggregationMan.utils';
 import { CrudController } from 'src/common/crud/controllers/crud.controller';
 import { searchBody } from 'src/common/crud/interfaces/searchBody.dto';
