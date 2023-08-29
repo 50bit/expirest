@@ -190,4 +190,33 @@ export class DrugAdsController {
 
         return await this.drugAdService.addDeliveryZoneBoolean(pharmacyId,drugAds)
     }
+
+    @Post("adv-search")
+    @HttpCode(HttpStatus.OK)
+    async advSearchDrugAds(@Request() req: any, @Headers() headers, @Body() body: searchBody) {
+        const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
+            ? headers['accept-language']
+            : 'multiLang');
+        const { search, options } = clone(body)
+        if (search.pharmacyId) {
+            if (search.pharmacyId.$ne)
+                search["pharmacyId"] = {"$ne": new ObjectIdType(search.pharmacyId.$ne)}
+            else
+                search["pharmacyId"] = new ObjectIdType(search.pharmacyId)
+        }
+        if (search.name) {
+            search["$or"] = [
+                { "drug_name_en": new RegExp(search.name, "gi") },
+                { "drug_name_ar": new RegExp(search.name, "gi") },
+            ]
+            delete search.name
+        }
+        
+        const pipelineConfig = aggregationPipelineConfig(lang)
+        const pipeline = aggregationMan(pipelineConfig, search, options)
+        const drugAds = await this.drugAdService.aggregate(pipeline);
+        const pharmacyId = req.user.pharmacyId
+
+        return await this.drugAdService.addDeliveryZoneBoolean(pharmacyId,drugAds)
+    }
 }
