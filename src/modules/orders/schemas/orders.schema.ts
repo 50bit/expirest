@@ -17,6 +17,9 @@ const ordersSchema: mongoose.Schema = new mongoose.Schema(
             type: String,
             enum: ['pending', 'preparing', 'delivered'],
             default: 'pending'
+        },
+        orderId:{
+            type: Number
         }
     },
     {
@@ -55,7 +58,7 @@ export const aggregationPipelineConfig = (lang) => ([
         "foriegnField": "drugRequests",
         "unwind":{
             "field":"$drugRequests",
-            "groupedFields":["pharmacyId","status"]
+            "groupedFields":["pharmacyId","status","orderId"]
         },
         "innerLookup": [
             {
