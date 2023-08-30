@@ -81,7 +81,12 @@ export class CartService extends CrudService {
           await this.model.updateOne({ _id: item._id }, { "$set": { "checkedOut": true,orderNo } })
           await this.updateDrugAdStock(item.drugRequestId)
         }
-        await this.ordersModel.create({pharmacyId,status:'pending',drugRequests:map(cartItems,(item)=>item.drugRequestId._id)})
+        const largestOrderID = (await this.ordersModel.find().sort({'orderId':-1}).limit(1))
+        let orderId = 1;
+        if(largestOrderID[0] && largestOrderID[0].toJSON().orderId){
+          orderId = largestOrderID[0].toJSON().orderId + 1
+        }
+        await this.ordersModel.create({orderId,pharmacyId,status:'pending',drugRequests:map(cartItems,(item)=>item.drugRequestId._id)})
         throw new HttpException(
           'All transaction has been correctly procceeded, Thank you for using Expirest ',
           HttpStatus.OK,

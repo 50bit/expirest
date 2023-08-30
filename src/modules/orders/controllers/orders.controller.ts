@@ -119,6 +119,7 @@ export class OrdersController {
                         cond: { $eq: [ "$$drugRequest.drugAdId.pharmacyId._id", new ObjectIdType(pharmacyId) ] }
                     }
                 },
+                orderId:1
             }
         })
         pipeline.push({
