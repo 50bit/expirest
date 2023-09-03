@@ -59,6 +59,10 @@ const DrugAdSchema: mongoose.Schema = new mongoose.Schema(
         deactivated: {
             type: Boolean,
             default: false
+        },
+        numberOfClicks:{
+            type: Number,
+            default:0
         }
     },
     {
