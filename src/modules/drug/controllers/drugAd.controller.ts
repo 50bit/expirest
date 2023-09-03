@@ -194,7 +194,7 @@ export class DrugAdsController {
             ? headers['accept-language']
             : 'multiLang');
         const pipelineConfig = aggregationPipelineConfig(lang)
-        const pipeline = aggregationMan(pipelineConfig, { pharmacyId: new ObjectIdType(pharmacyId),deactivated:false })
+        const pipeline = aggregationMan(pipelineConfig, { pharmacyId: new ObjectIdType(pharmacyId), deactivated: false })
         return await this.drugAdService.aggregate(pipeline);
     }
 
@@ -214,7 +214,7 @@ export class DrugAdsController {
         const { search, options } = clone(body)
         if (search.pharmacyId) {
             if (search.pharmacyId.$ne)
-                search["pharmacyId"] = {"$ne": new ObjectIdType(search.pharmacyId.$ne)}
+                search["pharmacyId"] = { "$ne": new ObjectIdType(search.pharmacyId.$ne) }
             else
                 search["pharmacyId"] = new ObjectIdType(search.pharmacyId)
         }
@@ -228,13 +228,13 @@ export class DrugAdsController {
 
         search['deactivated'] = false
         search['status'] = 'approved'
-        
+
         const pipelineConfig = aggregationPipelineConfig(lang)
         const pipeline = aggregationMan(pipelineConfig, search, options)
         const drugAds = await this.drugAdService.aggregate(pipeline);
         const pharmacyId = req.user.pharmacyId
 
-        return await this.drugAdService.addDeliveryZoneBoolean(pharmacyId,drugAds)
+        return await this.drugAdService.addDeliveryZoneBoolean(pharmacyId, drugAds)
     }
 
     @Post("adv-search")
@@ -246,7 +246,7 @@ export class DrugAdsController {
         const { search, options } = clone(body)
         if (search.pharmacyId) {
             if (search.pharmacyId.$ne)
-                search["pharmacyId"] = {"$ne": new ObjectIdType(search.pharmacyId.$ne)}
+                search["pharmacyId"] = { "$ne": new ObjectIdType(search.pharmacyId.$ne) }
             else
                 search["pharmacyId"] = new ObjectIdType(search.pharmacyId)
         }
@@ -257,12 +257,25 @@ export class DrugAdsController {
             ]
             delete search.name
         }
-        
+
         const pipelineConfig = aggregationPipelineConfig(lang)
         const pipeline = aggregationMan(pipelineConfig, search, options)
         const drugAds = await this.drugAdService.aggregate(pipeline);
         const pharmacyId = req.user.pharmacyId
 
-        return await this.drugAdService.addDeliveryZoneBoolean(pharmacyId,drugAds)
+        return await this.drugAdService.addDeliveryZoneBoolean(pharmacyId, drugAds)
+    }
+
+    @Put('phone-call-click:id')
+    @HttpCode(HttpStatus.OK)
+    async updatePhoneCallClick(@Request() req: any, @Headers() headers, @Param('id') id: string) {
+        const pharmacyId = req.user.pharmacyId
+        const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
+            ? headers['accept-language']
+            : 'multiLang');
+        return this.drugAdService.updateById(
+            id,
+            { $inc: { numberOfClicks: 1 } }
+        )
     }
 }
