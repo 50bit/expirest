@@ -114,6 +114,10 @@ export class CrudService {
     }
   }
 
+  async updateOne(query: string, body: any) {
+    return await this.Model.updateOne(query, body);
+  }
+
   async updateById(id: string, body: any) {
     try {
       const result = await this.Model.updateOne({ _id: id }, {"$set":body});
