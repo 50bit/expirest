@@ -273,7 +273,7 @@ export class DrugAdsController {
         const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
             ? headers['accept-language']
             : 'multiLang');
-        return this.drugAdService.update(
+        return this.drugAdService.updateOne(
             id,
             { $inc: { numberOfClicks: 1 } }
         )
