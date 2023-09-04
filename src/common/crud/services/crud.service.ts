@@ -114,7 +114,7 @@ export class CrudService {
     }
   }
 
-  async updateOne(query: string, body: any) {
+  async updateOne(query: any, body: any) {
     return await this.Model.updateOne(query, body);
   }
 
