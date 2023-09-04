@@ -266,7 +266,7 @@ export class DrugAdsController {
         return await this.drugAdService.addDeliveryZoneBoolean(pharmacyId, drugAds)
     }
 
-    @Put('phone-call-click:id')
+    @Put('phone-call-click/:id')
     @HttpCode(HttpStatus.OK)
     async updatePhoneCallClick(@Request() req: any, @Headers() headers, @Param('id') id: string) {
         const pharmacyId = req.user.pharmacyId
