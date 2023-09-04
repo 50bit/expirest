@@ -274,7 +274,7 @@ export class DrugAdsController {
             ? headers['accept-language']
             : 'multiLang');
         return this.drugAdService.updateOne(
-            id,
+            {_id:id},
             { $inc: { numberOfClicks: 1 } }
         )
     }
