@@ -17,7 +17,6 @@ export class Pharmacy {
 
   @ApiProperty()
   @IsString()
-  @Matches(/^01[0125][0-9]{8}$/gm)
   phoneNumber: string;
 
   @ApiProperty()
