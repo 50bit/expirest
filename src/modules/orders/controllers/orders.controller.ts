@@ -36,7 +36,7 @@ export class OrdersController {
         const lang = (headers['accept-language'] == 'en' || headers['accept-language'] == 'ar'
             ? headers['accept-language']
             : 'multiLang');
-        await this.orderService.update({_id:id},{"$set":body})
+        await this.orderService.update({_id:new ObjectIdType(id)},{"$set":body})
         const pipelineConfig = aggregationPipelineConfig(lang)
         const pipeline = aggregationMan(pipelineConfig, {_id:new ObjectIdType(id)})
         return (await this.orderService.aggregate(pipeline))[0];
