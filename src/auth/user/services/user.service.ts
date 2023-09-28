@@ -30,16 +30,17 @@ export class UserService extends CrudService {
         HttpStatus.METHOD_NOT_ALLOWED,
       );
 
-    const verficationCode = random(10000, 99999)
+    // const verficationCode = random(10000, 99999)
     const password = generate({
       length: 10,
       numbers: true,
     });
     try {
-      body["verficationCode"] = verficationCode;
+      // body["verficationCode"] = verficationCode;
       body["password"]= password;
+      body["activatedByEmail"]= true;
       const user = await this.userModel.create({...body});
-      await this.mailUtils.sendVerificationEmail(body.fullName, verficationCode, body.email, false)
+      // await this.mailUtils.sendVerificationEmail(body.fullName, verficationCode, body.email, false)
       await this.mailUtils.sendRandomGeneratedPasswordEmail(body.fullName,password,body.email)
       delete user.password
       return user
