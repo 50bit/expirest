@@ -7,7 +7,7 @@ export class ConfigService {
   constructor(filePath: string) {
 
     if(filePath.includes('undefined')){
-      this.envConfig = this.validateInput({
+      this.envConfig = {
         MONGODB_URI: 'mongodb://localhost/expirest',
         DATABASE_USERNAME: '',
         DATABASE_PASSWORD: '',
@@ -19,7 +19,7 @@ export class ConfigService {
         JWT_EXPIRATION_TIME: '365d',
         MAIL_USER: 'expirest.eg@gmail.com',
         MAIL_PASS: 'mmsrftphijrlgfgf'
-      });
+      };
     }else{
       const parsedConfig = parse(readFileSync(filePath));
       this.envConfig = this.validateInput(parsedConfig);
