@@ -45,7 +45,7 @@ import { SysAdminchema } from './user/schemas/sysAdmin.schema';
     UserService,
     {
       provide: 'ConfigService',
-      useValue: new ConfigService(`.env.${process.env.NODE_ENV}`),
+      useValue: new ConfigService(`.env.${process.env.NODE_ENV || 'development' }`),
     },
     MailUtils,
     DeliveryZonesService

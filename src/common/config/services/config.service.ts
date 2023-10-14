@@ -8,7 +8,7 @@ export class ConfigService {
 
     if(filePath.includes('undefined')){
       this.envConfig = {
-        MONGODB_URI: 'mongodb://localhost/expirest',
+        MONGODB_URI: 'mongodb://0.0.0.0:27017/expirest',
         DATABASE_USERNAME: '',
         DATABASE_PASSWORD: '',
         DATABASE_NAME: 'expirest',

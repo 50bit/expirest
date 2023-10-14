@@ -15,7 +15,7 @@ import { ModulesModule } from './modules/modules.module';
     AppService,
     {
       provide: 'ConfigService',
-      useValue: new ConfigService(`.env.${process.env.NODE_ENV}`),
+      useValue: new ConfigService(`.env.${process.env.NODE_ENV || 'development'}`),
     }
   ]
 })
@@ -25,7 +25,7 @@ export class AppModule {
   
   constructor(@Inject('ConfigService') private readonly config) {
     AppModule.port = process.env.PORT || config.get('PORT');
-    AppModule.isDev = process.env.NODE_ENV === "development" ? true : false;
+    AppModule.isDev = (process.env.NODE_ENV || 'development') === "development" ? true : false;
   }
 
   // DOC: https://docs.nestjs.com/middleware
