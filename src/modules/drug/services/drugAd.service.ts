@@ -97,6 +97,6 @@ export class DrugAdService extends CrudService {
         }
       }
 
-    return orderBy(drugAds,['inDeliveryZone'],['desc'])
+    return drugAds;
   }
 }

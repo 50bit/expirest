@@ -5,8 +5,25 @@ export class ConfigService {
   private readonly envConfig: DotenvParseOutput;
 
   constructor(filePath: string) {
-    const parsedConfig = parse(readFileSync(filePath));
-    this.envConfig = this.validateInput(parsedConfig);
+
+    if(filePath.includes('undefined')){
+      this.envConfig = this.validateInput({
+        MONGODB_URI: 'mongodb://localhost/expirest',
+        DATABASE_USERNAME: '',
+        DATABASE_PASSWORD: '',
+        DATABASE_NAME: 'expirest',
+        JWT_SECRET: 'JzVBOnK5yc',
+        TIMEOUT: '1000000',
+        PORT: '3000',
+        isDev: 'true',
+        JWT_EXPIRATION_TIME: '365d',
+        MAIL_USER: 'expirest.eg@gmail.com',
+        MAIL_PASS: 'mmsrftphijrlgfgf'
+      });
+    }else{
+      const parsedConfig = parse(readFileSync(filePath));
+      this.envConfig = this.validateInput(parsedConfig);
+    }
   }
 
   /**

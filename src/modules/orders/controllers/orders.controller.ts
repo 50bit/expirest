@@ -136,7 +136,20 @@ export class OrdersController {
                 return sum + n;
             }, 0) || 0;
         }
-        
-        return result
+        let totalWithService = (reduce(map(result,(res)=>res.total), function(sum, n) {
+            return sum + n;
+        }, 0) || 0 );
+        let serviceCost = 0;
+
+        if(totalWithService <= 250){
+            serviceCost = 5
+            totalWithService += serviceCost;
+        }
+        if(totalWithService > 250){
+            serviceCost = parseFloat(((totalWithService*2)/100).toFixed(2));
+            totalWithService += serviceCost;
+        }
+
+        return {result,serviceCost,totalWithService}
     }
 }
