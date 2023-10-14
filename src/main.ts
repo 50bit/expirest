@@ -49,7 +49,7 @@ async function bootstrap() {
   // Log current url of app and documentation
   let baseUrl = app.getHttpServer().address().address;
   if (baseUrl === '0.0.0.0' || baseUrl === '::') {
-    baseUrl = 'localhost';
+    baseUrl = '0.0.0.0';
   }
   const url = `http://${baseUrl}:${AppModule.port}${globalPrefix}`;
   logger.log(`Listening to ${url}`);
