@@ -60,13 +60,11 @@ export class DrugAdsController {
                 filename: function (req, file, cb) {
                     cb(
                         null,
+                        Date.now() +
+                        '-' + 
                         'expirest' +
                         '-' +
-                        file.originalname +
-                        '-' +
-                        Date.now() +
-                        '.' +
-                        file.mimetype.split('/')[1],
+                        file.originalname
                     );
                 },
             }),
@@ -149,13 +147,11 @@ export class DrugAdsController {
                 filename: function (req, file, cb) {
                     cb(
                         null,
+                        Date.now() +
+                        '-' + 
                         'expirest' +
                         '-' +
-                        file.originalname +
-                        '-' +
-                        Date.now() +
-                        '.' +
-                        file.mimetype.split('/')[1],
+                        file.originalname
                     );
                 },
             }),
