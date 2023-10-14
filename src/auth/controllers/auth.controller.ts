@@ -78,13 +78,11 @@ export class AuthController {
         filename: function (req, file, cb) {
           cb(
             null,
+            Date.now() +
+            '-' +
             'expirest' +
             '-' +
-            file.originalname.replace(".pdf", "") +
-            '-' +
-            Date.now() +
-            '.' +
-            file.mimetype.split('/')[1],
+            file.originalname
           );
         },
       }),
@@ -140,13 +138,11 @@ export class AuthController {
         filename: function (req, file, cb) {
           cb(
             null,
+            Date.now() +
+            '-' +
             'expirest' +
             '-' +
-            file.originalname.replace(".pdf", "") +
-            '-' +
-            Date.now() +
-            '.' +
-            file.mimetype.split('/')[1],
+            file.originalname
           );
         },
       }),
