@@ -7,6 +7,8 @@ import { AppModule } from './app.module';
 import { loggerMiddleware } from './common/middlewares/logger.middleware';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { ErrorsInterceptor } from './common/interceptors/errors.interceptor';
+import express from 'express';
+import { join } from 'path';
 
 declare const module: any;
 
@@ -35,6 +37,8 @@ async function bootstrap() {
   // }
 
   // app.useGlobalFilters(new Handler());
+
+  app.use('/uploads', express.static(join(process.cwd(), '/uploads/')));
 
   setupSwagger(app);
 
