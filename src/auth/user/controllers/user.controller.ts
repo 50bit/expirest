@@ -74,7 +74,7 @@ export class UserController {
       emailExists = !isEmpty(user);
     }
     if (!emailExists) {
-      await this.usersService.update({ _id: id }, { $set: { ...body } });
+      await this.usersService.update({ _id: id }, { ...body });
       return await this.usersService.findOne({ _id: id });
     }
     throw new HttpException(
