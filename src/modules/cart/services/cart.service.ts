@@ -86,7 +86,7 @@ export class CartService extends CrudService {
         if(largestOrderID[0] && largestOrderID[0].toJSON().orderId){
           orderId = largestOrderID[0].toJSON().orderId + 1
         }
-        await this.ordersModel.create({orderId,pharmacyId,status:'pending',drugRequests:map(cartItems,(item)=>item.drugRequestId._id)})
+        await this.ordersModel.create({orderId,pharmacyId,status:'pending',drugRequests:map(cartItems,(item)=>item.drugRequestId._id),quantity:map(cartItems,(item)=>({drugRequestId:item.drugRequestId._id,packages:item.packages || 0,packageUnits:item.packageUnits || 0}))})
         throw new HttpException(
           'All transaction has been correctly procceeded, Thank you for using Expirest ',
           HttpStatus.OK,
