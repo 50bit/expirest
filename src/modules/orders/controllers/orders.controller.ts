@@ -119,6 +119,8 @@ export class OrdersController {
         if(requestLookupIndex >= 0){
             if(get(pipeline[requestLookupIndex],'$lookup.pipeline[1].$lookup.pipeline[1].$lookup.pipeline[0].$match.$expr.$and'))
                 pipeline[requestLookupIndex].$lookup.pipeline[1].$lookup.pipeline[1].$lookup.pipeline[0].$match.$expr.$and.push({pharmacyId : new ObjectIdType(pharmacyId)})
+
+                console.log(JSON.stringify(pipeline))
         }
 
         pipeline.push({ 
