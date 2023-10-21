@@ -85,8 +85,8 @@ export class OrdersController {
             
             if(res.drugRequests && res.quantity){
                 forEach(res.drugRequests,(drugRequest)=>{
-                    const dr = findIndex(res.quantity,(el)=> el.drugRequestId == drugRequest._id)
-                    console.log(drugRequest._id)
+                    const dr = findIndex(res.quantity,(el)=> String(el.drugRequestId) == String(drugRequest._id))
+                    console.log(String(drugRequest._id))
                     console.log(dr)
                     if(dr && res.quantity[dr]){
                         drugRequest.drugAdId.availablePackages = res.quantity[dr].packages || 0
@@ -152,8 +152,8 @@ export class OrdersController {
             
             if(res.drugRequests && res.quantity){
                 forEach(res.drugRequests,(drugRequest)=>{
-                    const dr = findIndex(res.quantity,(el)=> el.drugRequestId == drugRequest._id)
-                    console.log(drugRequest._id)
+                    const dr = findIndex(res.quantity,(el)=> String(el.drugRequestId) == String(drugRequest._id))
+                    console.log(String(drugRequest._id))
                     console.log(dr)
                     if(dr && res.quantity[dr]){
                         drugRequest.drugAdId.availablePackages = res.quantity[dr].packages || 0
