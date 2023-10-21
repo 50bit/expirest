@@ -98,7 +98,18 @@ export const aggregationPipelineConfig = (lang) => ([
                 "langConfig": {
                     "langField": "city_name",
                     "lang": lang
-                }
+                },
+                "innerLookup": [
+                    {
+                        "ref": "governorates",
+                        "lookupField": "id",
+                        "foriegnField": "governorateId",
+                        "langConfig": {
+                            "langField": "governorate_name",
+                            "lang": lang
+                        }
+                    }
+                ]
             }
         ]
     }
