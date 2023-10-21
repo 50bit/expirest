@@ -48,7 +48,7 @@ export class DrugRequestService extends CrudService {
       const pipelineCopy = clone(cartPipeline)
       if (get(pipelineCopy[drugAdLookupIndex], '$lookup.pipeline[1].$lookup.pipeline[0].$match.$expr.$and')) {
         pipelineCopy[drugAdLookupIndex].$lookup.pipeline[0].$match.$expr.$and.push({"$ne":["$status","rejected"]})
-        pipelineCopy[drugAdLookupIndex].$lookup.pipeline[1].$lookup.pipeline[0].$match.$expr.$and.push({ _id: new ObjectIdType(drugAdId) })
+        pipelineCopy[drugAdLookupIndex].$lookup.pipeline[0].$match.$expr.$and.push({"drugAdId ": new ObjectIdType(drugAdId)})
         const cartSameDrugRequests = await this.cartModel.aggregate(pipelineCopy);
         if (cartSameDrugRequests && cartSameDrugRequests.length > 0) {
           throw new HttpException(
@@ -102,7 +102,8 @@ export class DrugRequestService extends CrudService {
     if (drugAdLookupIndex >= 0) {
       const pipelineCopy = clone(cartPipeline)
       if (get(pipelineCopy[drugAdLookupIndex], '$lookup.pipeline[1].$lookup.pipeline[0].$match.$expr.$and')) {
-        pipelineCopy[drugAdLookupIndex].$lookup.pipeline[1].$lookup.pipeline[0].$match.$expr.$and.push({ _id: new ObjectIdType(drugAdId) })
+        pipelineCopy[drugAdLookupIndex].$lookup.pipeline[0].$match.$expr.$and.push({"$ne":["$status","rejected"]})
+        pipelineCopy[drugAdLookupIndex].$lookup.pipeline[0].$match.$expr.$and.push({"drugAdId ": new ObjectIdType(drugAdId)})
         const cartSameDrugRequests = await this.cartModel.aggregate(pipelineCopy);
         if (cartSameDrugRequests && cartSameDrugRequests.length > 0) {
           throw new HttpException(
