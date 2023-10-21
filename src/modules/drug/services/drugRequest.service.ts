@@ -46,8 +46,8 @@ export class DrugRequestService extends CrudService {
 
     if (drugAdLookupIndex >= 0) {
       const pipelineCopy = clone(cartPipeline)
-      if (get(pipelineCopy[drugAdLookupIndex], '$lookup.pipeline[1].$lookup.pipeline[0].$match.$expr.$and')) {
-        pipelineCopy[drugAdLookupIndex].push({
+      if (pipelineCopy) {
+        pipelineCopy.push({
           "$match": {
             "drugRequestId.drugAdId": new ObjectIdType(drugAdId),
             "$expr": {
@@ -111,8 +111,8 @@ export class DrugRequestService extends CrudService {
     })
     if (drugAdLookupIndex >= 0) {
       const pipelineCopy = clone(cartPipeline)
-      if (get(pipelineCopy[drugAdLookupIndex], '$lookup.pipeline[1].$lookup.pipeline[0].$match.$expr.$and')) {
-        pipelineCopy[drugAdLookupIndex].push({
+      if (pipelineCopy) {
+        pipelineCopy.push({
           "$match": {
             "drugRequestId.drugAdId": new ObjectIdType(drugAdId),
             "$expr": {
