@@ -28,9 +28,6 @@ const CartsSchema: mongoose.Schema = new mongoose.Schema(
         },
         packages:{
             type: Number
-        },
-        quantity:{
-            type:Object
         }
     },
     {
