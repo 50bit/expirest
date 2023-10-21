@@ -150,6 +150,7 @@ export class DrugRequestController {
         }
 
         const pipelineConfig = aggregationPipelineConfig(lang)
+        if(search.recieved) search['status'] = 'approved'
         const pipeline = aggregationMan(pipelineConfig, search,options)
         if(search.recieved){
             const pharmacyId = req.user.pharmacyId
