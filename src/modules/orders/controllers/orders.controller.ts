@@ -86,16 +86,16 @@ export class OrdersController {
             if(res.drugRequests && res.quantity){
                 forEach(res.drugRequests,(drugRequest)=>{
                     const dr = findIndex(res.quantity,(el)=> String(el.drugRequestId) == String(drugRequest._id))
-                    console.log(String(drugRequest._id))
-                    console.log(dr)
-                    if(dr && res.quantity[dr]){
+                    if(dr >= 0 && res.quantity[dr]){
                         drugRequest.drugAdId.availablePackages = res.quantity[dr].packages || 0
                         drugRequest.drugAdId.availablePackageUnits = res.quantity[dr].packageUnits || 0
                         delete drugRequest.packages
                         delete drugRequest.packageUnits
                     }
                 })
+                delete res.quantity
             }
+            if(res.quantity == null) delete res.quantity
         }
         
         return result
@@ -153,16 +153,16 @@ export class OrdersController {
             if(res.drugRequests && res.quantity){
                 forEach(res.drugRequests,(drugRequest)=>{
                     const dr = findIndex(res.quantity,(el)=> String(el.drugRequestId) == String(drugRequest._id))
-                    console.log(String(drugRequest._id))
-                    console.log(dr)
-                    if(dr && res.quantity[dr]){
+                    if(dr >= 0 && res.quantity[dr]){
                         drugRequest.drugAdId.availablePackages = res.quantity[dr].packages || 0
                         drugRequest.drugAdId.availablePackageUnits = res.quantity[dr].packageUnits || 0
                         delete drugRequest.packages
                         delete drugRequest.packageUnits
                     }
                 })
+                delete res.quantity
             }
+            if(res.quantity == null) delete res.quantity
         }
         let totalWithService = (reduce(map(result,(res)=>res.total), function(sum, n) {
             return sum + n;
