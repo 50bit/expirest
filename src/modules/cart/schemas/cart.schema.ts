@@ -22,6 +22,15 @@ const CartsSchema: mongoose.Schema = new mongoose.Schema(
         },
         orderNo:{
             type: String
+        },
+        packageUnits:{
+            type: Number
+        },
+        packages:{
+            type: Number
+        },
+        quantity:{
+            type:Object
         }
     },
     {

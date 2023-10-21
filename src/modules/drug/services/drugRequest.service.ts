@@ -162,6 +162,16 @@ export class DrugRequestService extends CrudService {
         pharmacyId: body.pharmacyId,
         checkedOut: false
       }
+
+      if (!drugRequestBody.packageUnits && isNaN(parseInt(drugRequestBody.packageUnits)))
+        cartBody['packageUnits'] = 0
+      else cartBody['packageUnits'] = drugRequestBody.packageUnits
+
+      if (!drugRequestBody.packages && isNaN(parseInt(drugRequestBody.packages)))
+        cartBody['packages'] = 0
+      else cartBody['packages'] = drugRequestBody.packages
+
+      
       await this.cartModel.create(cartBody)
       return fullDrugRequest
 

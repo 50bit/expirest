@@ -20,7 +20,7 @@ import { aggregationPipelineConfig } from 'src/modules/orders/schemas/orders.sch
 import { aggregationMan } from 'src/common/utils/aggregationMan.utils';
 import { OrdersService } from '../services/orders.service';
 import { ObjectIdType } from 'src/common/utils/db.utils';
-import { clone, findIndex, get, map, reduce } from 'lodash'
+import { clone, findIndex, get, map, reduce, forEach } from 'lodash'
 @ApiTags('Orders')
 @Controller('orders')
 @ApiBearerAuth('access-token')
@@ -82,6 +82,16 @@ export class OrdersController {
             res["total"] = reduce(map(res.drugRequests,(dr)=>dr.total), function(sum, n) {
                 return sum + n;
             }, 0) || 0;
+            
+            if(res.drugRequests && res.quantity){
+                forEach(res.drugRequests,(drugRequest)=>{
+                    const dr = findIndex(res.quantity,(el)=> el.drugRequestId == drugRequest._id)
+                    if(dr){
+                        drugRequest.drugAdId.packages = res.quantity[dr].packages || 0
+                        drugRequest.drugAdId.packageUnits = res.quantity[dr].packageUnits || 0
+                    }
+                })
+            }
         }
         
         return result
@@ -135,6 +145,16 @@ export class OrdersController {
             res["total"] = reduce(map(res.drugRequests,(dr)=>dr.total), function(sum, n) {
                 return sum + n;
             }, 0) || 0;
+            
+            if(res.drugRequests && res.quantity){
+                forEach(res.drugRequests,(drugRequest)=>{
+                    const dr = findIndex(res.quantity,(el)=> el.drugRequestId == drugRequest._id)
+                    if(dr){
+                        drugRequest.drugAdId.packages = res.quantity[dr].packages || 0
+                        drugRequest.drugAdId.packageUnits = res.quantity[dr].packageUnits || 0
+                    }
+                })
+            }
         }
         let totalWithService = (reduce(map(result,(res)=>res.total), function(sum, n) {
             return sum + n;
