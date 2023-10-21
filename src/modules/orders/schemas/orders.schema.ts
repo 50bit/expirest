@@ -71,7 +71,7 @@ export const aggregationPipelineConfig = (lang) => ([
         "foriegnField": "drugRequests",
         "unwind":{
             "field":"$drugRequests",
-            "groupedFields":["pharmacyId","status","orderId"]
+            "groupedFields":["pharmacyId","status","orderId","quantity"]
         },
         "innerLookup": [
             {
