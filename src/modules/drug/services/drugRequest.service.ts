@@ -49,7 +49,7 @@ export class DrugRequestService extends CrudService {
       if (pipelineCopy) {
         pipelineCopy.push({
           "$match": {
-            "drugRequestId.drugAdId": new ObjectIdType(drugAdId),
+            "drugRequestId.drugAdId._id": new ObjectIdType(drugAdId),
             "$expr": {
               "$and": [
                 {
@@ -114,7 +114,7 @@ export class DrugRequestService extends CrudService {
       if (pipelineCopy) {
         pipelineCopy.push({
           "$match": {
-            "drugRequestId.drugAdId": new ObjectIdType(drugAdId),
+            "drugRequestId.drugAdId._id": new ObjectIdType(drugAdId),
             "$expr": {
               "$and": [
                 {
