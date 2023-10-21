@@ -160,8 +160,12 @@ export class DrugRequestController {
             })
             if(drugAdLookupIndex >= 0){
                 const pipelineCopy = clone(pipeline)
-                if(get(pipelineCopy[drugAdLookupIndex],'$lookup.pipeline[0].$match.$expr.$and')){
-                    pipelineCopy[drugAdLookupIndex].$lookup.pipeline[0].$match.$expr.$and.push({pharmacyId : new ObjectIdType(pharmacyId)})
+                if(pipelineCopy){
+                    pipelineCopy.push({
+                        "$match": {
+                          "drugAdId.pharmacyId._id": new ObjectIdType(pharmacyId)
+                        }
+                      })
                     delete search.recieved
                     return await this.drugRequestService.aggregate(pipelineCopy);
                 }
