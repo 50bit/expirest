@@ -20,7 +20,20 @@ const ordersSchema: mongoose.Schema = new mongoose.Schema(
         },
         orderId:{
             type: Number
-        }
+        },
+        quantity:[
+            {
+                drugRequestId:{
+                    type: ObjectId,
+                },
+                packageUnits:{
+                    type: Number
+                },
+                packages:{
+                    type: Number
+                }
+            }
+        ]
     },
     {
         timestamps: true,
