@@ -8,8 +8,7 @@ const PharmacySchema: mongoose.Schema = new mongoose.Schema(
             type: String
         },
         phoneNumber: {
-            type: String,
-            match: /^01[0125][0-9]{8}$/gm
+            type: String
         },
         governorateId: {
             type: ObjectId,
