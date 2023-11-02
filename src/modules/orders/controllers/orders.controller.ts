@@ -97,7 +97,7 @@ export class OrdersController {
             }
             if(res.quantity == null) delete res.quantity
         }
-        
+
         return result
     }
 
@@ -149,6 +149,10 @@ export class OrdersController {
             res["total"] = reduce(map(res.drugRequests,(dr)=>dr.total), function(sum, n) {
                 return sum + n;
             }, 0) || 0;
+
+            res["totalBeforeDiscount"] = reduce(map(res.drugRequests,(dr)=>(dr.total / ( 1 - (dr.discount/100)))), function(sum, n) {
+                return sum + n;
+            }, 0) || 0;
             
             if(res.drugRequests && res.quantity){
                 forEach(res.drugRequests,(drugRequest)=>{
@@ -177,6 +181,10 @@ export class OrdersController {
             serviceCost = parseFloat(((totalWithService*2)/100).toFixed(2));
             totalWithService += serviceCost;
         }
+
+        let totalBeforeDiscount = reduce(map(result,(dr)=>dr.totalBeforeDiscount || 0), function(sum, n) {
+            return sum + n;
+        }, 0) || 0;
 
         return {result,serviceCost,totalWithService}
     }

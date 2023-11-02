@@ -91,7 +91,7 @@ export class CommonModule {
         if (count === 0) {
           // add default delivery-zones
           if(el.label == 'Delivery-Zones'){
-            this.cities.find({governorateId:"22",city_name_en: "Madinat Kafr El Sheikh"}).then(result=>{
+            this.cities.find({governorateId:"22",city_name_en: "Kafr El Sheikh"}).then(result=>{
               const deliveryZoneData = map(result,(res)=>({cityId:res._id,deliveryZones:map(result,(dz)=>dz._id)}))
               model.insertMany(deliveryZoneData)
               logger.log(`Default ${label} data inserted successfully`);
