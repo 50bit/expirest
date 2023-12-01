@@ -82,6 +82,12 @@ export class OrdersController {
             res["total"] = reduce(map(res.drugRequests,(dr)=>dr.total), function(sum, n) {
                 return sum + n;
             }, 0) || 0;
+
+	    res["totalBeforeDiscount"] = reduce(map(res.drugRequests,(dr)=>(dr.discount ? dr.total / ( 1 - (dr.discount/100)) : dr.total )), function(sum, n) {
+                 return sum + n;
+             }, 0) || 0;
+
+	    console.log(res)
             
             if(res.drugRequests && res.quantity){
                 forEach(res.drugRequests,(drugRequest)=>{
@@ -150,9 +156,11 @@ export class OrdersController {
                 return sum + n;
             }, 0) || 0;
 
-            res["totalBeforeDiscount"] = reduce(map(res.drugRequests,(dr)=>(dr.total / ( 1 - (dr.discount/100)))), function(sum, n) {
-                return sum + n;
-            }, 0) || 0;
+           // res["totalBeforeDiscount"] = reduce(map(res.drugRequests,(dr)=>(dr.discount ? dr.total / ( 1 - (dr.discount/100)) : dr.total )), function(sum, n) {
+             //   return sum + n;
+            //}, 0) || 0;
+
+            //console.log(res)
             
             if(res.drugRequests && res.quantity){
                 forEach(res.drugRequests,(drugRequest)=>{
