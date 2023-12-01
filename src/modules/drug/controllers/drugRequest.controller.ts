@@ -150,7 +150,7 @@ export class DrugRequestController {
         }
 
         const pipelineConfig = aggregationPipelineConfig(lang)
-        if(search.recieved) search['status'] = 'approved'
+        //if(search.recieved) search['status'] = 'approved'
         const pipeline = aggregationMan(pipelineConfig, search,options)
         if(search.recieved){
             const pharmacyId = req.user.pharmacyId
@@ -167,12 +167,13 @@ export class DrugRequestController {
                         }
                       })
                     delete search.recieved
+			//console.log(JSON.stringify(pipelineCopy))
                     return await this.drugRequestService.aggregate(pipelineCopy);
                 }
             }
         }
         const allRequests = await this.drugRequestService.aggregate(pipeline);
-
+        //console.log("test",JSON.stringify(pipeline))
         await this.drugRequestService.aggregate(pipeline);
         for(const request of allRequests){
             request['isItemInCart'] = await this.drugRequestService.isItemInCart(request._id,userId)
