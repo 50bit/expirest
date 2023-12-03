@@ -6,7 +6,7 @@ import { ObjectIdType } from 'src/common/utils/db.utils';
 import { aggregationPipelineConfig } from '../schemas/drugRequest.schema';
 import { aggregationMan } from 'src/common/utils/aggregationMan.utils';
 import { aggregationPipelineConfig as cartAggregationPipelineConfig } from '../../cart/schemas/cart.schema';
-import { clone, findIndex, get } from 'lodash';
+import { clone, findIndex, get, isEmpty } from 'lodash';
 
 @Injectable()
 export class DrugRequestService extends CrudService {
@@ -210,7 +210,7 @@ export class DrugRequestService extends CrudService {
 
   async reject(id) {
     const inCart = this.cartModel.findOne({ drugRequestId: id })
-    if(!inCart){
+    if(isEmpty(inCart) || !inCart){
       await this.model.updateOne({ "_id": new ObjectIdType(id) }, { "$set": { "status": 'rejected' } })
       throw new HttpException(
         'DrugRequest has been successfully updated',
