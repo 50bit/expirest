@@ -209,7 +209,7 @@ export class DrugRequestService extends CrudService {
   }
 
   async reject(id) {
-    const inCart = this.cartModel.findOne({ drugRequestId: id })
+    const inCart = await this.cartModel.findOne({ drugRequestId: id })
     if(isEmpty(inCart) || !inCart){
       await this.model.updateOne({ "_id": new ObjectIdType(id) }, { "$set": { "status": 'rejected' } })
       throw new HttpException(
@@ -217,7 +217,7 @@ export class DrugRequestService extends CrudService {
         HttpStatus.OK,
       );
     }else{
-      const isCheckedOut = this.cartModel.findOne({ drugRequestId: id,checkedOut:false })
+      const isCheckedOut = await this.cartModel.findOne({ drugRequestId: id,checkedOut:false })
       if(isEmpty(isCheckedOut) || !isCheckedOut){
         await this.model.updateOne({ "_id": new ObjectIdType(id) }, { "$set": { "status": 'rejected' } })
         await this.cartModel.deleteOne({ drugRequestId: id })
