@@ -218,7 +218,7 @@ export class DrugRequestService extends CrudService {
       );
     }else{
       const isCheckedOut = this.cartModel.findOne({ drugRequestId: id,checkedOut:false })
-      if(!isCheckedOut){
+      if(isEmpty(isCheckedOut) || !isCheckedOut){
         await this.model.updateOne({ "_id": new ObjectIdType(id) }, { "$set": { "status": 'rejected' } })
         await this.cartModel.deleteOne({ drugRequestId: id })
         throw new HttpException(
