@@ -79,24 +79,24 @@ export class OrdersController {
 
         const pipelineConfig = aggregationPipelineConfig(lang)
         const pipeline = aggregationMan(pipelineConfig, search)
-
+       
         const result = await this.orderService.aggregate(pipeline);
-        for (const res of result) {
+        for(const res of result){
             res["count"] = res.drugRequests.length || 0;
-            res["total"] = reduce(map(res.drugRequests, (dr) => dr.total), function (sum, n) {
+            res["total"] = reduce(map(res.drugRequests,(dr)=>dr.total), function(sum, n) {
                 return sum + n;
             }, 0) || 0;
 
-            res["totalBeforeDiscount"] = reduce(map(res.drugRequests, (dr) => (dr.discount ? dr.total / (1 - (dr.discount / 100)) : dr.total)), function (sum, n) {
-                return sum + n;
-            }, 0) || 0;
+	    res["totalBeforeDiscount"] = reduce(map(res.drugRequests,(dr)=>(dr.discount ? dr.total / ( 1 - (dr.discount/100)) : dr.total )), function(sum, n) {
+                 return sum + n;
+             }, 0) || 0;
 
-            res.totalBeforeDiscount = parseFloat(res.totalBeforeDiscount).toFixed(2)
-
-            if (res.drugRequests && res.quantity) {
-                forEach(res.drugRequests, (drugRequest) => {
-                    const dr = findIndex(res.quantity, (el) => String(el.drugRequestId) == String(drugRequest._id))
-                    if (dr >= 0 && res.quantity[dr]) {
+	    // console.log(res)
+            
+            if(res.drugRequests && res.quantity){
+                forEach(res.drugRequests,(drugRequest)=>{
+                    const dr = findIndex(res.quantity,(el)=> String(el.drugRequestId) == String(drugRequest._id))
+                    if(dr >= 0 && res.quantity[dr]){
                         drugRequest.drugAdId.availablePackages = res.quantity[dr].packages || 0
                         drugRequest.drugAdId.availablePackageUnits = res.quantity[dr].packageUnits || 0
                         delete drugRequest.packages
@@ -105,7 +105,7 @@ export class OrdersController {
                 })
                 delete res.quantity
             }
-            if (res.quantity == null) delete res.quantity
+            if(res.quantity == null) delete res.quantity
         }
 
         return result
