@@ -22,6 +22,8 @@ import { OrdersService } from '../services/orders.service';
 import { ObjectIdType } from 'src/common/utils/db.utils';
 import { clone, findIndex, get, map, reduce, forEach } from 'lodash'
 import { PharmacyService } from 'src/modules/pharmacy/services/pharmacy.service';
+import { aggregationPipelineConfig  as pharmacyPipelineConfig } from 'src/modules/pharmacy/schemas/pharmacy.schema';
+
 @ApiTags('Orders')
 @Controller('orders')
 @ApiBearerAuth('access-token')
@@ -172,8 +174,11 @@ export class OrdersController {
             res['totalWithService'] = totalWithService;
             res['serviceCost'] = serviceCost;
 
-            if(res.drugRequests.length)
-                res.pharmacyId = await this.pharmacyService.findOne({ _id: new ObjectIdType(res.drugRequests[0].pharmacyId) })
+            if(res.drugRequests.length){
+                const phPipelineConfig = pharmacyPipelineConfig(lang)
+                const pharmacyPipeline = aggregationMan(phPipelineConfig, { _id: new ObjectIdType(res.drugRequests[0].pharmacyId) })
+                res.pharmacyId = (await this.pharmacyService.aggregate(pharmacyPipeline))[0];
+            }
 
             if (res.drugRequests && res.quantity) {
                 forEach(res.drugRequests, (drugRequest) => {
