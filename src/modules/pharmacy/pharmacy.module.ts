@@ -13,6 +13,7 @@ import { UserSchema } from 'src/auth/user/schemas/user.schema';
       { name: 'pharmacies', schema: PharmacySchema },
       { name: 'users', schema: UserSchema },
     ])
-  ]
+  ],
+  exports:[PharmacyService]
 })
 export class PharmacyModule { }
