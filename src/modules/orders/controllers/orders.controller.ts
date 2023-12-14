@@ -165,18 +165,20 @@ export class OrdersController {
 
             if (totalWithService <= 250) {
                 serviceCost = 5
-                totalWithService += serviceCost;
+                totalWithService -= serviceCost;
+                res.total += serviceCost
             }
             if (totalWithService > 250) {
                 serviceCost = parseFloat(((totalWithService * 2) / 100).toFixed(2));
-                totalWithService += serviceCost;
+                totalWithService -= serviceCost;
+                res.total += serviceCost
             }
             res['totalWithService'] = totalWithService;
             res['serviceCost'] = serviceCost;
 
             if(res.drugRequests.length){
                 const phPipelineConfig = pharmacyPipelineConfig(lang)
-                const pharmacyPipeline = aggregationMan(phPipelineConfig, { _id: new ObjectIdType(res.drugRequests[0].pharmacyId) })
+                const pharmacyPipeline = aggregationMan(phPipelineConfig, { _id: new ObjectIdType(req.user.pharmacyId) })
                 res.pharmacyId = (await this.pharmacyService.aggregate(pharmacyPipeline))[0];
             }
 
