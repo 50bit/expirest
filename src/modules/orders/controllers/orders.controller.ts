@@ -165,13 +165,11 @@ export class OrdersController {
 
             if (totalWithService <= 250) {
                 serviceCost = 5
-                totalWithService -= serviceCost;
-                res.total += serviceCost
+                totalWithService += serviceCost;
             }
             if (totalWithService > 250) {
                 serviceCost = parseFloat(((totalWithService * 2) / 100).toFixed(2));
-                totalWithService -= serviceCost;
-                res.total += serviceCost
+                totalWithService += serviceCost;
             }
             res['totalWithService'] = totalWithService;
             res['serviceCost'] = serviceCost;
