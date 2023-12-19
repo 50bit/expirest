@@ -14,6 +14,7 @@ import { CartModule } from '../cart/cart.module';
 import { DeliveryZonesSchema } from '../delivery-zones/schemas/delivery-zones.schema';
 import { DeliveryZonesService } from '../delivery-zones/services/delivery-zones.service';
 import { PharmacySchema } from '../pharmacy/schemas/pharmacy.schema';
+import { UserSchema } from 'src/auth/user/schemas/user.schema';
 
 @Module({
     controllers: [DrugController,DrugAdsController,DrugRequestController],
@@ -26,6 +27,7 @@ import { PharmacySchema } from '../pharmacy/schemas/pharmacy.schema';
             { name: 'carts', schema: CartsSchema },
             { name: 'delivery-zones', schema: DeliveryZonesSchema },
             { name: 'pharmacies', schema: PharmacySchema },
+            { name: 'users', schema: UserSchema },
         ])
     ]
 })

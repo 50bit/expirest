@@ -2,7 +2,7 @@ import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { CrudService } from 'src/common/crud/services/crud.service';
-import { forEach, clone, cloneDeep, orderBy } from 'lodash'
+import { forEach, clone, cloneDeep, orderBy,map } from 'lodash'
 import fs from 'fs';
 import { ObjectIdType } from 'src/common/utils/db.utils';
 import { aggregationPipelineConfig } from '../schemas/drugAd.schema';
@@ -14,6 +14,7 @@ export class DrugAdService extends CrudService {
     @InjectModel('drug-ads') public readonly model: Model<any>,
     @InjectModel('drug-requests') public readonly drugRequestModel: Model<any>,
     @InjectModel('pharmacies') public readonly pharmacyModel: Model<any>,
+    @InjectModel('users') public readonly usersModel: Model<any>,
     private readonly deliveryZonesService:DeliveryZonesService
   ) {
     super(model);
@@ -90,10 +91,14 @@ export class DrugAdService extends CrudService {
     const drugAds = cloneDeep(arr)
     if(pharmacy && pharmacy.cityId && pharmacy.cityId._id)
       for(const drugAd of drugAds){
-     
+    
         if(drugAd.pharmacyId && drugAd.pharmacyId.cityId && drugAd.pharmacyId.cityId._id){
           // console.log({cityId:pharmacy.cityId._id,deliveryZone:drugAd.pharmacyId.cityId._id || ""})
           drugAd['inDeliveryZone'] = await this.deliveryZonesService.inDeliveryZone({cityId:pharmacy.cityId._id,deliveryZones:drugAd.pharmacyId.cityId._id || ""})
+        }
+        if(drugAd.pharmacyId && drugAd.pharmacyId._id){
+          const users = await this.usersModel.find({pharmacyId:drugAd.pharmacyId._id})
+          drugAd['phoneNumbers'] = map(users,(user)=>user.phoneNumber)
         }
       }
 
